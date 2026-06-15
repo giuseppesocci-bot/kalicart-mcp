@@ -14,7 +14,7 @@ class KaliCart_MCP_Admin {
 
 	public static function init(): void {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
-		add_action( 'admin_head', array( __CLASS__, 'menu_icon_css' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'menu_icon_css' ) );
 	}
 
 	public static function menu(): void {
@@ -43,13 +43,20 @@ class KaliCart_MCP_Admin {
 		if ( ! is_readable( $file ) ) {
 			return;
 		}
-		$uri = 'data:image/svg+xml;base64,' . base64_encode( file_get_contents( $file ) ); // phpcs:ignore
-		echo '<style>'
-			. '#adminmenu #toplevel_page_' . esc_attr( self::SLUG ) . ' .wp-menu-image{background:none!important;}'
-			. '#adminmenu #toplevel_page_' . esc_attr( self::SLUG ) . ' .wp-menu-image::before{content:"";display:block;width:20px;height:20px;margin:7px auto;background-color:currentColor;'
-			. '-webkit-mask:url(\'' . $uri . '\') no-repeat center;-webkit-mask-size:contain;'
-			. 'mask:url(\'' . $uri . '\') no-repeat center;mask-size:contain;}'
-			. '</style>'; // phpcs:ignore
+		$svg = file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local bundled asset
+		if ( false === $svg ) {
+			return;
+		}
+		// URL-encode the SVG (no base64): safely embeddable in a CSS url() value.
+		$uri  = 'data:image/svg+xml,' . rawurlencode( $svg );
+		$sel  = '#adminmenu #toplevel_page_' . self::SLUG;
+		$css  = $sel . ' .wp-menu-image{background:none!important;}';
+		$css .= $sel . ' .wp-menu-image::before{content:"";display:block;width:20px;height:20px;margin:7px auto;background-color:currentColor;';
+		$css .= '-webkit-mask:url("' . $uri . '") no-repeat center;-webkit-mask-size:contain;';
+		$css .= 'mask:url("' . $uri . '") no-repeat center;mask-size:contain;}';
+		wp_register_style( 'kalicart-mcp-menu', false, array(), KALICART_MCP_VERSION );
+		wp_enqueue_style( 'kalicart-mcp-menu' );
+		wp_add_inline_style( 'kalicart-mcp-menu', $css );
 	}
 
 	public static function render(): void {
@@ -146,7 +153,7 @@ class KaliCart_MCP_Admin {
 							<span class="kcmcp-tog-label">
 								<strong><?php echo esc_html( $obj->labels->name ?? $slug ); ?></strong>
 								<?php if ( $reserved > 0 ) : ?>
-								<span class="kcmcp-muted">(<?php echo $shown; ?> of <?php echo $pub; ?>)</span>
+								<span class="kcmcp-muted">(<?php echo (int) $shown; ?> of <?php echo (int) $pub; ?>)</span>
 								<div class="kcmcp-tog-note"><?php echo (int) $reserved; ?> WooCommerce pages (cart, checkout, my account&hellip;) excluded automatically</div>
 								<?php else : ?>
 								<span class="kcmcp-muted">(<?php echo (int) $pub; ?>)</span>

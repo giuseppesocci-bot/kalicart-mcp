@@ -23,10 +23,6 @@ define( 'KALICART_MCP_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'KALICART_MCP_URL',     plugin_dir_url( __FILE__ ) );
 define( 'KALICART_MCP_API_NS',  'kalicart-mcp/v1' );
 
-add_action( 'init', function () {
-	load_plugin_textdomain( 'kalicart-mcp', false, dirname( plugin_basename( KALICART_MCP_FILE ) ) . '/languages' );
-} );
-
 require_once KALICART_MCP_DIR . 'includes/class-markdown.php';
 require_once KALICART_MCP_DIR . 'includes/class-content.php';
 require_once KALICART_MCP_DIR . 'includes/class-mcp.php';

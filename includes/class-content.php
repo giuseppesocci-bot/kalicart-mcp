@@ -175,11 +175,11 @@ class KaliCart_MCP_Content {
 		// Exclude WooCommerce functional pages (cart, checkout, my account, shop, etc.).
 		$not_in = self::woo_reserved_page_ids();
 		if ( ! empty( $not_in ) ) {
-			$q_args['post__not_in'] = $not_in;
+			$q_args['post__not_in'] = $not_in; // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- small bounded set of WooCommerce functional pages, required to keep commerce UI out of editorial content.
 		}
 
 		// Exclude items the owner has hidden from agents.
-		$q_args['meta_query'] = array(
+		$q_args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- owner opt-out flag, bounded by pagination.
 			'relation' => 'OR',
 			array( 'key' => '_kcmcp_exclude', 'compare' => 'NOT EXISTS' ),
 			array( 'key' => '_kcmcp_exclude', 'value' => '1', 'compare' => '!=' ),
@@ -220,8 +220,8 @@ class KaliCart_MCP_Content {
 			'post_status'    => 'publish',
 			'posts_per_page' => $per_page,
 			'paged'          => $page,
-			'post__not_in'   => $s_not_in,
-			'meta_query'     => array(
+			'post__not_in'   => $s_not_in, // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- small bounded set of WooCommerce functional pages.
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- owner opt-out flag, bounded by pagination.
 				'relation' => 'OR',
 				array( 'key' => '_kcmcp_exclude', 'compare' => 'NOT EXISTS' ),
 				array( 'key' => '_kcmcp_exclude', 'value' => '1', 'compare' => '!=' ),
@@ -268,7 +268,7 @@ class KaliCart_MCP_Content {
 
 		$GLOBALS['post'] = $post;
 		setup_postdata( $post );
-		$html = apply_filters( 'the_content', $post->post_content );
+		$html = apply_filters( 'the_content', $post->post_content ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- applying WordPress core filter, not registering a custom hook.
 		wp_reset_postdata();
 
 		return array(

@@ -213,7 +213,8 @@ class KaliCart_MCP_Admin {
 			#kcmcp-post-search{border-radius:8px;border:1px solid #bebebe;}
 			.kcmcp-togglelist{display:flex;flex-direction:column;gap:2px;margin-top:6px;}
 			.kcmcp-togglelist:empty{margin:0;}
-			.kcmcp-trow{display:flex;align-items:center;gap:11px;padding:7px 4px;cursor:pointer;user-select:none;border-bottom:1px solid #f3f3f3;}
+			.kcmcp-trow{display:flex;align-items:center;gap:11px;padding:7px 4px;user-select:none;border-bottom:1px solid #f3f3f3;}
+			.kcmcp-trow .kcmcp-switch{display:inline-flex;align-items:center;cursor:pointer;flex:0 0 auto;}
 			.kcmcp-trow:last-child{border-bottom:none;}
 			.kcmcp-trow input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;pointer-events:none;}
 			.kcmcp-trow input:checked + .kcmcp-tog-track{background:#f80;}
@@ -341,11 +342,13 @@ class KaliCart_MCP_Admin {
 						$type_obj = get_post_type_object( $hp->post_type );
 						$type_lbl = $type_obj ? $type_obj->labels->singular_name : $hp->post_type;
 						?>
-					<label class="kcmcp-trow">
-						<input type="checkbox" class="kcmcp-xtoggle" data-id="<?php echo (int) $hp->ID; ?>" checked />
-						<span class="kcmcp-tog-track"><span class="kcmcp-tog-thumb"></span></span>
+					<div class="kcmcp-trow">
+						<label class="kcmcp-switch">
+							<input type="checkbox" class="kcmcp-xtoggle" data-id="<?php echo (int) $hp->ID; ?>" checked />
+							<span class="kcmcp-tog-track"><span class="kcmcp-tog-thumb"></span></span>
+						</label>
 						<span class="kcmcp-trow-title"><?php echo esc_html( $hp->post_title ? $hp->post_title : __( '(no title)', 'kalicart-mcp' ) ); ?> <span class="kcmcp-muted">&middot; <?php echo esc_html( $type_lbl ); ?></span></span>
-					</label>
+					</div>
 					<?php endforeach; ?>
 				</div>
 				<?php endif; ?>
@@ -495,8 +498,10 @@ class KaliCart_MCP_Admin {
 			}
 
 			function kcmcpRow(item){
-				var label = document.createElement('label');
-				label.className = 'kcmcp-trow';
+				var row = document.createElement('div');
+				row.className = 'kcmcp-trow';
+				var sw = document.createElement('label');
+				sw.className = 'kcmcp-switch';
 				var cb = document.createElement('input');
 				cb.type = 'checkbox'; cb.className = 'kcmcp-xtoggle';
 				cb.setAttribute('data-id', item.id); cb.checked = !!item.hidden;
@@ -509,8 +514,9 @@ class KaliCart_MCP_Admin {
 					var t = document.createElement('span'); t.className = 'kcmcp-muted';
 					t.textContent = ' \u00b7 ' + item.type; title.appendChild(t);
 				}
-				label.appendChild(cb); label.appendChild(track); label.appendChild(title);
-				return label;
+				sw.appendChild(cb); sw.appendChild(track);
+				row.appendChild(sw); row.appendChild(title);
+				return row;
 			}
 
 			var search = document.getElementById('kcmcp-post-search');

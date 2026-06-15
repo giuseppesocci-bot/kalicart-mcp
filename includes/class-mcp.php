@@ -119,11 +119,14 @@ class KaliCart_MCP_Server {
 				'title'   => 'KaliCart MCP — ' . $name,
 				'version' => KALICART_MCP_VERSION,
 			),
-			'instructions'    => implode( ' ', array(
+			'instructions'    => implode( ' ', array_filter( array(
 				'Read-only navigation of the WordPress site "' . $name . '".',
 				'Call site_info first to learn what the site is and which post types and taxonomies exist.',
 				'Use site_map for menus and the page hierarchy, search_content to find content by keyword, list_content to browse a post type, and get_content to read a single item as clean Markdown.',
-			) ),
+				KaliCart_MCP_Bridge_Hint::woo_active()
+					? 'This site runs WooCommerce, but this server exposes editorial content (pages, posts) only: products, product categories, cart, checkout, account and shop surfaces are deliberately excluded. For the product catalog (prices, variants, stock) use KaliCart Bridge; do not infer commerce data from editorial content here.'
+					: '',
+			) ) ),
 		);
 	}
 

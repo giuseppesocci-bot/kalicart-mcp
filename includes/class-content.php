@@ -123,6 +123,40 @@ class KaliCart_MCP_Content {
 		);
 	}
 
+	/**
+	 * A nav-menu item must be hidden from the agent map when it points to a
+	 * commerce surface: a Woo object (product), a Woo taxonomy term
+	 * (product_cat / product_tag / product_shipping_class), a WooCommerce
+	 * functional page, or an item the owner flagged with _kcmcp_exclude.
+	 * MCP is content-only: navigation into the shop is not content.
+	 */
+	private static function menu_item_is_excluded( $it ): bool {
+		$object    = isset( $it->object ) ? (string) $it->object : '';
+		$object_id = isset( $it->object_id ) ? (int) $it->object_id : 0;
+
+		// Post-type objects that are structurally excluded (product, attachment, ...).
+		if ( 'post_type' === $it->type && in_array( $object, self::excluded_types(), true ) ) {
+			return true;
+		}
+
+		// Woo taxonomy terms surfaced as menu items.
+		if ( 'taxonomy' === $it->type && in_array( $object, array( 'product_cat', 'product_tag', 'product_shipping_class' ), true ) ) {
+			return true;
+		}
+
+		// WooCommerce functional pages (shop/cart/checkout/account/policies).
+		if ( 'post_type' === $it->type && 'page' === $object && in_array( $object_id, self::woo_reserved_page_ids(), true ) ) {
+			return true;
+		}
+
+		// Per-item owner opt-out on the linked object.
+		if ( $object_id > 0 && '1' === get_post_meta( $object_id, '_kcmcp_exclude', true ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public static function site_map(): array {
 		$menus = array();
 		foreach ( (array) get_nav_menu_locations() as $location => $menu_id ) {
@@ -132,6 +166,9 @@ class KaliCart_MCP_Content {
 			}
 			$links = array();
 			foreach ( $items as $it ) {
+				if ( self::menu_item_is_excluded( $it ) ) {
+					continue;
+				}
 				$links[] = array(
 					'title'  => $it->title,
 					'url'    => $it->url,
@@ -161,6 +198,16 @@ class KaliCart_MCP_Content {
 	}
 
 	public static function list_content( array $args ): array {
+		// Explicit post_type that is not an exposed type -> honest error, never a silent fallback.
+		if ( isset( $args['post_type'] ) && '' !== $args['post_type'] ) {
+			$requested = sanitize_key( (string) $args['post_type'] );
+			if ( ! in_array( $requested, array_keys( self::public_post_types() ), true ) ) {
+				return array(
+					'success' => false,
+					'error'   => sprintf( 'post_type "%s" is not exposed by this server. Allowed: %s', $requested, implode( ', ', array_keys( self::public_post_types() ) ) ),
+				);
+			}
+		}
 		$type     = self::sanitize_type( $args['post_type'] ?? 'post' );
 		$per_page = self::clamp( (int) ( $args['per_page'] ?? 20 ), 1, 100 );
 		$page     = max( 1, (int) ( $args['page'] ?? 1 ) );

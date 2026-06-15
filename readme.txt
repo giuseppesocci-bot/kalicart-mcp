@@ -4,7 +4,7 @@ Tags: mcp, ai, agents, markdown, content
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.2.6
+Stable tag: 0.2.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,11 @@ Yes. Each post and page has a "Hide from AI agents" checkbox in the editor sideb
 No. WooCommerce is optional. If it is installed, the relevant functional pages are detected and excluded automatically.
 
 == Changelog ==
+
+= 0.2.7 =
+* Fix: site_map no longer surfaces WooCommerce navigation (shop, product categories/tags); menu filtering matches linked objects, not URL slugs, so it is language-independent.
+* Fix: list_content returns an explicit error for a non-exposed post_type instead of silently falling back to posts.
+* Add: when WooCommerce is detected, the initialize instructions state the content-only policy and point agents to KaliCart Bridge for catalog data.
 
 = 0.2.6 =
 * Admin: finalized the KaliCart MCP brand logo in the page header.

@@ -1,5 +1,12 @@
 *** KaliCart MCP Changelog ***
 
+2026-06-15 - version 0.2.7
+
+* Fix: site_map no longer surfaces WooCommerce navigation (shop, product categories/tags); menu filtering matches linked objects, not URL slugs, so it is language-independent.
+* Fix: list_content returns an explicit error for a non-exposed post_type instead of silently falling back to posts.
+* Add: when WooCommerce is detected, the initialize instructions state the content-only policy and point agents to KaliCart Bridge for catalog data.
+
+
 2026-06-15 - version 0.2.6
 
 * Admin: finalized the KaliCart MCP brand logo in the page header.

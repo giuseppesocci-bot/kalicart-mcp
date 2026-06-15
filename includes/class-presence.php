@@ -50,7 +50,7 @@ class KaliCart_MCP_Presence {
 	 *   ai-train=no   default: do not train models on this content
 	 */
 	public static function content_signal_value(): string {
-		return 'search=yes, ai-input=yes, ai-train=no';
+		return 'search=yes, ai-input=yes, ai-train=yes';
 	}
 
 	public static function add_content_signal_header( $response, $server, $request ) {

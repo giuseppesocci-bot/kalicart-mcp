@@ -10,13 +10,37 @@ defined( 'ABSPATH' ) || exit;
  */
 class KaliCart_MCP_Content {
 
-	public static function public_post_types(): array {
-		// public AND navigable (show_in_nav_menus=true): keeps post/page/product, drops
-		// elementor_library, e-floating-buttons that register public=true but
-		// are not navigable destinations. Structural rule, not a per-plugin blocklist.
+	/** Candidate content types: public + navigable, minus media and commerce. */
+	public static function eligible_post_types(): array {
+		// Public AND navigable (show_in_nav_menus=true): keeps post/page and genuine
+		// content CPTs; drops elementor_library / e-floating-buttons (public but not
+		// navigable destinations). Structural rule, not a per-plugin blocklist.
 		$types = get_post_types( array( 'public' => true, 'show_in_nav_menus' => true ), 'objects' );
-		unset( $types['attachment'] );
+
+		// Commerce is the Bridge's domain — MCP serves editorial content only.
+		foreach ( self::excluded_types() as $slug ) {
+			unset( $types[ $slug ] );
+		}
 		return $types;
+	}
+
+	/** Types actually exposed to agents: eligible types filtered by the owner's choice. */
+	public static function public_post_types(): array {
+		$types  = self::eligible_post_types();
+		$chosen = get_option( 'kcmcp_exposed_types', null );
+		if ( is_array( $chosen ) ) {
+			foreach ( array_keys( $types ) as $slug ) {
+				if ( ! in_array( $slug, $chosen, true ) ) {
+					unset( $types[ $slug ] );
+				}
+			}
+		}
+		return $types;
+	}
+
+	/** Types MCP never treats as content: media + commerce (the Bridge owns products). */
+	private static function excluded_types(): array {
+		return array( 'attachment', 'product', 'product_variation' );
 	}
 
 	public static function site_info(): array {
@@ -33,8 +57,20 @@ class KaliCart_MCP_Content {
 			);
 		}
 
+		// Only taxonomies attached to the exposed content types (drops Woo product
+		// taxonomies once products are excluded).
+		$tax_slugs = array();
+		foreach ( array_keys( self::public_post_types() ) as $pt ) {
+			foreach ( get_object_taxonomies( $pt ) as $tx ) {
+				$tax_slugs[ $tx ] = true;
+			}
+		}
 		$taxes = array();
-		foreach ( get_taxonomies( array( 'public' => true ), 'objects' ) as $slug => $obj ) {
+		foreach ( array_keys( $tax_slugs ) as $slug ) {
+			$obj = get_taxonomy( $slug );
+			if ( ! $obj || empty( $obj->public ) ) {
+				continue;
+			}
 			$taxes[] = array(
 				'slug'  => $slug,
 				'label' => $obj->labels->name ?? $slug,
@@ -75,6 +111,9 @@ class KaliCart_MCP_Content {
 
 		$pages = array();
 		foreach ( get_pages( array( 'sort_column' => 'menu_order,post_title', 'number' => 200 ) ) as $p ) {
+			if ( '1' === get_post_meta( $p->ID, '_kcmcp_exclude', true ) ) {
+				continue;
+			}
 			$pages[] = array(
 				'id'     => (int) $p->ID,
 				'title'  => $p->post_title,
@@ -107,6 +146,12 @@ class KaliCart_MCP_Content {
 			$q_args['tag'] = sanitize_title( (string) $args['tag'] );
 		}
 
+		// Exclude items the owner has hidden from agents.
+		$q_args['meta_query'] = array(
+			'relation' => 'OR',
+			array( 'key' => '_kcmcp_exclude', 'compare' => 'NOT EXISTS' ),
+			array( 'key' => '_kcmcp_exclude', 'value' => '1', 'compare' => '!=' ),
+		);
 		$query = new WP_Query( $q_args );
 		$items = array();
 		foreach ( $query->posts as $post ) {
@@ -142,6 +187,11 @@ class KaliCart_MCP_Content {
 			'post_status'    => 'publish',
 			'posts_per_page' => $per_page,
 			'paged'          => $page,
+			'meta_query'     => array(
+				'relation' => 'OR',
+				array( 'key' => '_kcmcp_exclude', 'compare' => 'NOT EXISTS' ),
+				array( 'key' => '_kcmcp_exclude', 'value' => '1', 'compare' => '!=' ),
+			),
 		) );
 
 		$items = array();
@@ -172,9 +222,11 @@ class KaliCart_MCP_Content {
 		if ( ! $post || 'publish' !== $post->post_status ) {
 			return array( 'success' => false, 'error' => 'Content not found or not public.' );
 		}
-		$pt = get_post_type_object( $post->post_type );
-		if ( ! $pt || empty( $pt->public ) ) {
-			return array( 'success' => false, 'error' => 'Content type is not public.' );
+		if ( ! array_key_exists( $post->post_type, self::public_post_types() ) ) {
+			return array( 'success' => false, 'error' => 'Content not found or not public.' );
+		}
+		if ( '1' === get_post_meta( $post->ID, '_kcmcp_exclude', true ) ) {
+			return array( 'success' => false, 'error' => 'Content not found or not public.' );
 		}
 
 		$GLOBALS['post'] = $post;
@@ -237,13 +289,14 @@ class KaliCart_MCP_Content {
 	}
 
 	private static function sanitize_type( $type ) {
-		$valid = array_keys( self::public_post_types() );
+		$valid    = array_keys( self::public_post_types() );
+		$fallback = $valid ? $valid[0] : '__kcmcp_none__';
 		if ( is_array( $type ) ) {
 			$clean = array_values( array_intersect( array_map( 'sanitize_key', $type ), $valid ) );
-			return ! empty( $clean ) ? $clean : 'post';
+			return ! empty( $clean ) ? $clean : $fallback;
 		}
 		$type = sanitize_key( (string) $type );
-		return in_array( $type, $valid, true ) ? $type : 'post';
+		return in_array( $type, $valid, true ) ? $type : $fallback;
 	}
 
 	private static function clamp( int $v, int $min, int $max ): int {

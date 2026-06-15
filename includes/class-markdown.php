@@ -146,6 +146,9 @@ class KaliCart_MCP_Markdown {
 			case 'ol':
 				return "\n\n" . self::list_items( $node, true ) . "\n";
 
+			case 'table':
+				return "\n\n" . self::table_to_md( $node ) . "\n\n";
+
 			default:
 				return self::walk_children( $node );
 		}
@@ -163,5 +166,50 @@ class KaliCart_MCP_Markdown {
 			}
 		}
 		return $out;
+	}
+
+	/**
+	 * HTML table -> GitHub-flavoured Markdown pipe table. The first row (a thead
+	 * row when present, otherwise the first body row) becomes the header, as GFM
+	 * requires a header + separator. Cell content is flattened to one line and
+	 * pipes are escaped.
+	 */
+	private static function table_to_md( \DOMNode $table ): string {
+		$rows = array();
+		foreach ( $table->getElementsByTagName( 'tr' ) as $tr ) {
+			$cells = array();
+			foreach ( $tr->childNodes as $c ) {
+				if ( XML_ELEMENT_NODE !== $c->nodeType ) {
+					continue;
+				}
+				$tag = strtolower( $c->nodeName );
+				if ( 'td' !== $tag && 'th' !== $tag ) {
+					continue;
+				}
+				$text    = trim( preg_replace( '/\s+/', ' ', self::walk_children( $c ) ) );
+				$text    = str_replace( '|', '\|', $text );
+				$cells[] = $text;
+			}
+			if ( $cells ) {
+				$rows[] = $cells;
+			}
+		}
+		if ( empty( $rows ) ) {
+			return '';
+		}
+
+		$cols = 0;
+		foreach ( $rows as $r ) {
+			$cols = max( $cols, count( $r ) );
+		}
+
+		$out    = array();
+		$header = array_pad( array_shift( $rows ), $cols, '' );
+		$out[]  = '| ' . implode( ' | ', $header ) . ' |';
+		$out[]  = '| ' . implode( ' | ', array_fill( 0, $cols, '---' ) ) . ' |';
+		foreach ( $rows as $r ) {
+			$out[] = '| ' . implode( ' | ', array_pad( $r, $cols, '' ) ) . ' |';
+		}
+		return implode( "\n", $out );
 	}
 }

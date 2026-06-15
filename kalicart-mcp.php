@@ -32,11 +32,21 @@ require_once KALICART_MCP_DIR . 'includes/class-content.php';
 require_once KALICART_MCP_DIR . 'includes/class-mcp.php';
 require_once KALICART_MCP_DIR . 'includes/class-presence.php';
 require_once KALICART_MCP_DIR . 'includes/class-bridge-hint.php';
+require_once KALICART_MCP_DIR . 'includes/class-meta-box.php';
+
+if ( is_admin() ) {
+	require_once KALICART_MCP_DIR . 'includes/class-admin.php';
+}
 
 add_action( 'plugins_loaded', function () {
 	KaliCart_MCP_Server::init();
 	KaliCart_MCP_Presence::init();
 	KaliCart_MCP_Bridge_Hint::init();
+	KaliCart_MCP_Meta_Box::init();
+
+	if ( is_admin() ) {
+		KaliCart_MCP_Admin::init();
+	}
 
 	// Version-gated: (re)write the physical .well-known mirror and flush rewrites
 	// once per plugin version, so discovery works on every install/update without

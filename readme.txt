@@ -1,10 +1,10 @@
 === KaliCart MCP ===
-Contributors: kalicart
+Contributors: carthub
 Tags: mcp, ai, agents, markdown, content
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.2.5
+Stable tag: 0.2.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,10 @@ Yes. Each post and page has a "Hide from AI agents" checkbox in the editor sideb
 No. WooCommerce is optional. If it is installed, the relevant functional pages are detected and excluded automatically.
 
 == Changelog ==
+
+= 0.2.6 =
+* Admin: finalized the KaliCart MCP brand logo in the page header.
+* Maintenance: corrected the readme Contributors entry.
 
 = 0.2.5 =
 * Admin: new KaliCart MCP brand logo in the page header.

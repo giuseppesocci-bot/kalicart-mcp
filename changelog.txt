@@ -1,5 +1,11 @@
 *** KaliCart MCP Changelog ***
 
+2026-06-15 - version 0.2.6
+
+* Admin: finalized the KaliCart MCP brand logo in the page header.
+* Maintenance: corrected the readme Contributors entry.
+
+
 2026-06-15 - version 0.2.5
 
 * Admin: new KaliCart MCP brand logo in the page header.

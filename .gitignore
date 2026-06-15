@@ -1,0 +1,15 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# session backups / secrets — never commit
+*.bak
+*.bak.*
+.env
+.env.*
+
+# build / vendor (none yet)
+/vendor/
+/node_modules/

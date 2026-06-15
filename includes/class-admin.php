@@ -84,7 +84,7 @@ class KaliCart_MCP_Admin {
 	/** Hide/show a single post or page from agents by toggling its _kcmcp_exclude meta. */
 	public static function rest_toggle_exclude( WP_REST_Request $request ) {
 		$id     = absint( $request->get_param( 'id' ) );
-		$hidden = (bool) $request->get_param( 'hidden' );
+		$hidden = rest_sanitize_boolean( $request->get_param( 'hidden' ) );
 		$post   = $id ? get_post( $id ) : null;
 		if ( ! $post ) {
 			return new WP_Error( 'kcmcp_not_found', __( 'Item not found.', 'kalicart-mcp' ), array( 'status' => 404 ) );
@@ -427,23 +427,70 @@ class KaliCart_MCP_Admin {
 				base:  <?php echo wp_json_encode( $rest_base ); ?>,
 				nonce: <?php echo wp_json_encode( $rest_nonce ); ?>,
 				t: {
-					noResults: <?php echo wp_json_encode( __( 'No matching posts.', 'kalicart-mcp' ) ); ?>,
+					noResults: <?php echo wp_json_encode( __( 'No matching content.', 'kalicart-mcp' ) ); ?>,
 					searching: <?php echo wp_json_encode( __( 'Searching…', 'kalicart-mcp' ) ); ?>,
-					error: <?php echo wp_json_encode( __( 'Search failed. Try again.', 'kalicart-mcp' ) ); ?>
+					error: <?php echo wp_json_encode( __( 'Search failed. Try again.', 'kalicart-mcp' ) ); ?>,
+					toggleError: <?php echo wp_json_encode( __( 'Could not save. Reload the page and try again.', 'kalicart-mcp' ) ); ?>,
+					hiddenLabel: <?php echo wp_json_encode( __( 'Currently hidden:', 'kalicart-mcp' ) ); ?>
 				}
 			};
+
+			function kcmcpHiddenBox(create){
+				var box = document.getElementById('kcmcp-hidden-posts');
+				if (box || !create) { return box; }
+				var anchor = document.getElementById('kcmcp-search-results');
+				if (!anchor) { return null; }
+				var p = document.createElement('p');
+				p.className = 'kcmcp-muted'; p.id = 'kcmcp-hidden-label';
+				p.style.marginTop = '16px'; p.textContent = KCMCP.t.hiddenLabel;
+				box = document.createElement('div');
+				box.id = 'kcmcp-hidden-posts'; box.className = 'kcmcp-togglelist';
+				anchor.parentNode.insertBefore(p, anchor.nextSibling);
+				p.parentNode.insertBefore(box, p.nextSibling);
+				return box;
+			}
+
+			function kcmcpSync(id, hidden, title, type){
+				// Reflect the new state in the "Currently hidden" list.
+				var box = document.getElementById('kcmcp-hidden-posts');
+				var existing = box ? box.querySelector('.kcmcp-xtoggle[data-id="' + id + '"]') : null;
+				if (hidden) {
+					if (existing) { existing.checked = true; return; }
+					box = kcmcpHiddenBox(true);
+					if (box) { box.appendChild(kcmcpRow({ id: id, title: title, type: type, hidden: true })); }
+				} else if (existing) {
+					var row = existing.closest('.kcmcp-trow');
+					if (row) { row.parentNode.removeChild(row); }
+					if (box && !box.querySelector('.kcmcp-trow')) {
+						var lbl = document.getElementById('kcmcp-hidden-label');
+						if (lbl) { lbl.parentNode.removeChild(lbl); }
+						box.parentNode.removeChild(box);
+					}
+				}
+			}
 
 			function kcmcpToggle(cb){
 				var id = parseInt(cb.getAttribute('data-id'), 10);
 				var hidden = cb.checked;
+				var row = cb.closest('.kcmcp-trow');
+				var titleEl = row ? row.querySelector('.kcmcp-trow-title') : null;
+				var title = titleEl ? titleEl.firstChild.textContent.trim() : ('#' + id);
+				var typeEl = titleEl ? titleEl.querySelector('.kcmcp-muted') : null;
+				var type = typeEl ? typeEl.textContent.replace(/^[\s\u00b7]+/, '') : '';
 				cb.disabled = true;
 				fetch(KCMCP.base + '/admin/toggle-exclude', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': KCMCP.nonce },
 					body: JSON.stringify({ id: id, hidden: hidden })
 				}).then(function(r){ return r.ok ? r.json() : Promise.reject(r); })
-				.then(function(){ cb.disabled = false; })
-				.catch(function(){ cb.checked = !hidden; cb.disabled = false; });
+				.then(function(){
+					cb.disabled = false;
+					kcmcpSync(id, hidden, title, type);
+				})
+				.catch(function(){
+					cb.checked = !hidden; cb.disabled = false;
+					window.alert(KCMCP.t.toggleError);
+				});
 			}
 
 			function kcmcpRow(item){

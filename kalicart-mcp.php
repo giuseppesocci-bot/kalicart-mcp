@@ -3,7 +3,7 @@
  * Plugin Name:       KaliCart MCP
  * Plugin URI:        https://mcp.kalicart.com
  * Description:       Agent-callable WordPress content and tools.
- * Version:           0.1.0
+ * Version:           0.2.0
  * Author:            KaliCart
  * Author URI:        https://kalicart.com
  * License:           GPL-2.0-or-later
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'KALICART_MCP_VERSION', '0.1.0' );
+define( 'KALICART_MCP_VERSION', '0.2.0' );
 define( 'KALICART_MCP_FILE',    __FILE__ );
 define( 'KALICART_MCP_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'KALICART_MCP_URL',     plugin_dir_url( __FILE__ ) );

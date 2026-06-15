@@ -4,7 +4,7 @@ Tags: mcp, ai, agents, markdown, content
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,6 +71,14 @@ No. WooCommerce is optional. If it is installed, the relevant functional pages a
 
 == Changelog ==
 
+= 0.2.0 =
+* Admin: content exclusion controls — hide categories, individual posts and pages from AI agents via instant toggles, plus a per-item "Hide from AI agents" switch in the editor sidebar.
+* Admin: unified post/page search with AJAX toggles and a live-updating "currently hidden" list.
+* WooCommerce functional pages (cart, checkout, account, shop) are now excluded from agent-readable content automatically.
+* Internationalization: Italian, German, French and Spanish translations; translation loader added.
+* Fix: row toggles now switch only when the switch itself is clicked, not the whole row.
+* Fix: sidebar menu icon alignment.
+
 = 0.1.0 =
 * Initial release.
 * JSON-RPC 2.0 MCP server with five tools (site_info, site_map, list_content, search_content, get_content).
@@ -81,6 +89,9 @@ No. WooCommerce is optional. If it is installed, the relevant functional pages a
 * Per-item "Hide from AI agents" control in the editor.
 
 == Upgrade Notice ==
+
+= 0.2.0 =
+Adds content exclusion controls, automatic WooCommerce page exclusion, and IT/DE/FR/ES translations.
 
 = 0.1.0 =
 Initial release.

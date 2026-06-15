@@ -102,7 +102,14 @@ class KaliCart_MCP_Admin {
 			.kcmcp-foot b{color:#f80;}
 			.kcmcp-link{color:#d97600;text-decoration:none;font-weight:500;}
 			.kcmcp-link:hover{color:#f80;text-decoration:underline;}
-			.kcmcp-check{display:flex;align-items:center;gap:9px;margin:8px 0;font-size:13px;}
+			.kcmcp-toggle{display:flex;align-items:center;gap:12px;margin:12px 0;cursor:pointer;user-select:none;}
+			.kcmcp-toggle input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;pointer-events:none;}
+			.kcmcp-tog-track{position:relative;width:44px;height:24px;background:#c3c4c7;border-radius:12px;transition:background .18s;flex:0 0 44px;}
+			.kcmcp-tog-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:left .18s;box-shadow:0 1px 3px rgba(0,0,0,.28);}
+			.kcmcp-toggle input:checked + .kcmcp-tog-track{background:#f80;}
+			.kcmcp-toggle input:checked + .kcmcp-tog-track .kcmcp-tog-thumb{left:23px;}
+			.kcmcp-tog-label{font-size:13px;color:#1d2327;line-height:1.4;}
+			.kcmcp-tog-note{font-size:11.5px;color:#646970;margin-top:1px;}
 		</style>
 
 		<div class="wrap kcmcp-wrap">
@@ -128,12 +135,23 @@ class KaliCart_MCP_Admin {
 					<?php wp_nonce_field( 'kcmcp_exposure' ); ?>
 					<?php
 					foreach ( KaliCart_MCP_Content::eligible_post_types() as $slug => $obj ) :
-						$cnt = wp_count_posts( $slug );
-						$pub = isset( $cnt->publish ) ? (int) $cnt->publish : 0;
+						$cnt      = wp_count_posts( $slug );
+						$pub      = isset( $cnt->publish ) ? (int) $cnt->publish : 0;
+						$reserved = ( 'page' === $slug ) ? count( KaliCart_MCP_Content::woo_reserved_page_ids() ) : 0;
+						$shown    = max( 0, $pub - $reserved );
 						?>
-						<label class="kcmcp-check">
+						<label class="kcmcp-toggle">
 							<input type="checkbox" name="kcmcp_types[]" value="<?php echo esc_attr( $slug ); ?>" <?php checked( in_array( $slug, $exposed, true ) ); ?> />
-							<span><strong><?php echo esc_html( $obj->labels->name ?? $slug ); ?></strong> <span class="kcmcp-muted">(<?php echo (int) $pub; ?>)</span></span>
+							<span class="kcmcp-tog-track"><span class="kcmcp-tog-thumb"></span></span>
+							<span class="kcmcp-tog-label">
+								<strong><?php echo esc_html( $obj->labels->name ?? $slug ); ?></strong>
+								<?php if ( $reserved > 0 ) : ?>
+								<span class="kcmcp-muted">(<?php echo $shown; ?> of <?php echo $pub; ?>)</span>
+								<div class="kcmcp-tog-note"><?php echo (int) $reserved; ?> WooCommerce pages (cart, checkout, my account&hellip;) excluded automatically</div>
+								<?php else : ?>
+								<span class="kcmcp-muted">(<?php echo (int) $pub; ?>)</span>
+								<?php endif; ?>
+							</span>
 						</label>
 					<?php endforeach; ?>
 					<div style="margin-top:12px;"><button type="submit" name="kcmcp_save_exposure" value="1" class="kcmcp-copy" style="padding:7px 18px;"><?php esc_html_e( 'Save', 'kalicart-mcp' ); ?></button></div>

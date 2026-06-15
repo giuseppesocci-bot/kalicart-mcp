@@ -43,6 +43,29 @@ class KaliCart_MCP_Content {
 		return array( 'attachment', 'product', 'product_variation' );
 	}
 
+	/** IDs of WooCommerce functional pages — excluded as application UI, not editorial content. */
+	public static function woo_reserved_page_ids(): array {
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return array();
+		}
+		$ids = array();
+		foreach ( array(
+			'woocommerce_shop_page_id',
+			'woocommerce_cart_page_id',
+			'woocommerce_checkout_page_id',
+			'woocommerce_myaccount_page_id',
+			'woocommerce_terms_page_id',
+			'woocommerce_privacy_policy_page_id',
+			'woocommerce_refund_returns_page_id',
+		) as $key ) {
+			$id = (int) get_option( $key );
+			if ( $id > 0 ) {
+				$ids[] = $id;
+			}
+		}
+		return array_unique( $ids );
+	}
+
 	public static function site_info(): array {
 		$front_id = (int) get_option( 'page_on_front' );
 		$blog_id  = (int) get_option( 'page_for_posts' );
@@ -114,6 +137,9 @@ class KaliCart_MCP_Content {
 			if ( '1' === get_post_meta( $p->ID, '_kcmcp_exclude', true ) ) {
 				continue;
 			}
+			if ( in_array( $p->ID, self::woo_reserved_page_ids(), true ) ) {
+				continue;
+			}
 			$pages[] = array(
 				'id'     => (int) $p->ID,
 				'title'  => $p->post_title,
@@ -144,6 +170,12 @@ class KaliCart_MCP_Content {
 		}
 		if ( ! empty( $args['tag'] ) ) {
 			$q_args['tag'] = sanitize_title( (string) $args['tag'] );
+		}
+
+		// Exclude WooCommerce functional pages (cart, checkout, my account, shop, etc.).
+		$not_in = self::woo_reserved_page_ids();
+		if ( ! empty( $not_in ) ) {
+			$q_args['post__not_in'] = $not_in;
 		}
 
 		// Exclude items the owner has hidden from agents.
@@ -181,12 +213,14 @@ class KaliCart_MCP_Content {
 			? self::sanitize_type( $args['post_type'] )
 			: array_keys( self::public_post_types() );
 
+		$s_not_in = self::woo_reserved_page_ids();
 		$query = new WP_Query( array(
 			's'              => $term,
 			'post_type'      => $types,
 			'post_status'    => 'publish',
 			'posts_per_page' => $per_page,
 			'paged'          => $page,
+			'post__not_in'   => $s_not_in,
 			'meta_query'     => array(
 				'relation' => 'OR',
 				array( 'key' => '_kcmcp_exclude', 'compare' => 'NOT EXISTS' ),
@@ -226,6 +260,9 @@ class KaliCart_MCP_Content {
 			return array( 'success' => false, 'error' => 'Content not found or not public.' );
 		}
 		if ( '1' === get_post_meta( $post->ID, '_kcmcp_exclude', true ) ) {
+			return array( 'success' => false, 'error' => 'Content not found or not public.' );
+		}
+		if ( in_array( $post->ID, self::woo_reserved_page_ids(), true ) ) {
 			return array( 'success' => false, 'error' => 'Content not found or not public.' );
 		}
 

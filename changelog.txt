@@ -1,5 +1,10 @@
 *** KaliCart MCP Changelog ***
 
+2026-06-15 - version 0.2.3
+
+* Fix: the "Content exposure" toggles now react only to the switch, not to clicks on the type label — same scheme as the exclusion list.
+
+
 2026-06-15 - version 0.2.2
 
 * Fix: clicking a row's title no longer toggles it — the hidden checkbox is now confined to the switch control instead of overflowing the whole row.

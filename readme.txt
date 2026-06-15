@@ -4,7 +4,7 @@ Tags: mcp, ai, agents, markdown, content
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.2.2
+Stable tag: 0.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,6 +71,9 @@ No. WooCommerce is optional. If it is installed, the relevant functional pages a
 
 == Changelog ==
 
+= 0.2.3 =
+* Fix: the "Content exposure" toggles now react only to the switch, not to clicks on the type label — same scheme as the exclusion list.
+
 = 0.2.2 =
 * Fix: clicking a row's title no longer toggles it — the hidden checkbox is now confined to the switch control instead of overflowing the whole row.
 
@@ -96,6 +99,9 @@ No. WooCommerce is optional. If it is installed, the relevant functional pages a
 * Per-item "Hide from AI agents" control in the editor.
 
 == Upgrade Notice ==
+
+= 0.2.3 =
+Completes the toggle click-area fix for the content exposure section.
 
 = 0.2.2 =
 Fixes the exclusion toggle reacting to clicks on the whole row.

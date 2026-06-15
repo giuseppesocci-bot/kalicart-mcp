@@ -207,8 +207,8 @@ class KaliCart_MCP_Admin {
 			.kcmcp-foot b{color:#f80;}
 			.kcmcp-link{color:#d97600;text-decoration:none;font-weight:500;}
 			.kcmcp-link:hover{color:#f80;text-decoration:underline;}
-			.kcmcp-toggle{display:flex;align-items:center;gap:12px;margin:12px 0;cursor:pointer;user-select:none;}
-			.kcmcp-toggle input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;pointer-events:none;}
+			.kcmcp-toggle{display:flex;align-items:center;gap:12px;margin:12px 0;user-select:none;}
+			.kcmcp-toggle .kcmcp-switch input[type=checkbox]{position:absolute;top:0;left:0;opacity:0;width:0;height:0;margin:0;pointer-events:none;}
 			.kcmcp-tog-track{position:relative;width:44px;height:24px;background:#c3c4c7;border-radius:12px;transition:background .18s;flex:0 0 44px;}
 			.kcmcp-tog-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:left .18s;box-shadow:0 1px 3px rgba(0,0,0,.28);}
 			.kcmcp-toggle input:checked + .kcmcp-tog-track{background:#f80;}
@@ -245,9 +245,11 @@ class KaliCart_MCP_Admin {
 						$reserved = ( 'page' === $slug ) ? count( KaliCart_MCP_Content::woo_reserved_page_ids() ) : 0;
 						$shown    = max( 0, $pub - $reserved );
 						?>
-						<label class="kcmcp-toggle">
-							<input type="checkbox" name="kcmcp_types[]" value="<?php echo esc_attr( $slug ); ?>" <?php checked( in_array( $slug, $exposed, true ) ); ?> />
-							<span class="kcmcp-tog-track"><span class="kcmcp-tog-thumb"></span></span>
+						<div class="kcmcp-toggle">
+							<label class="kcmcp-switch">
+								<input type="checkbox" name="kcmcp_types[]" value="<?php echo esc_attr( $slug ); ?>" <?php checked( in_array( $slug, $exposed, true ) ); ?> />
+								<span class="kcmcp-tog-track"><span class="kcmcp-tog-thumb"></span></span>
+							</label>
 							<span class="kcmcp-tog-label">
 								<strong><?php echo esc_html( $obj->labels->name ?? $slug ); ?></strong>
 								<?php if ( $reserved > 0 ) : ?>
@@ -257,7 +259,7 @@ class KaliCart_MCP_Admin {
 								<span class="kcmcp-muted">(<?php echo (int) $pub; ?>)</span>
 								<?php endif; ?>
 							</span>
-						</label>
+						</div>
 					<?php endforeach; ?>
 					<div style="margin-top:12px;"><button type="submit" name="kcmcp_save_exposure" value="1" class="kcmcp-copy" style="padding:7px 18px;"><?php esc_html_e( 'Save', 'kalicart-mcp' ); ?></button></div>
 				</form>

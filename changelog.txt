@@ -1,5 +1,10 @@
 *** KaliCart MCP Changelog ***
 
+2026-06-15 - version 0.2.5
+
+* Admin: new KaliCart MCP brand logo in the page header.
+
+
 2026-06-15 - version 0.2.4
 
 * Fix: restore toggle switch styling (a clipping rule was hiding the switch track); switch styles are now unified across both toggle sections.

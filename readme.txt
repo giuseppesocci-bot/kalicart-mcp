@@ -4,7 +4,7 @@ Tags: mcp, ai, agents, markdown, content
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.2.4
+Stable tag: 0.2.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,6 +71,9 @@ No. WooCommerce is optional. If it is installed, the relevant functional pages a
 
 == Changelog ==
 
+= 0.2.5 =
+* Admin: new KaliCart MCP brand logo in the page header.
+
 = 0.2.4 =
 * Fix: restore toggle switch styling (a clipping rule was hiding the switch track); switch styles are now unified across both toggle sections.
 
@@ -102,6 +105,9 @@ No. WooCommerce is optional. If it is installed, the relevant functional pages a
 * Per-item "Hide from AI agents" control in the editor.
 
 == Upgrade Notice ==
+
+= 0.2.5 =
+New admin header logo.
 
 = 0.2.4 =
 Restores the toggle switch appearance.

@@ -170,7 +170,7 @@ class KaliCart_MCP_Admin {
 		<style>
 			.wrap.kcmcp-wrap{width:96%;margin:24px 10px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--kb-text,#1d2327);font-size:13px;max-width:1480px;}
 			.kcmcp-hd{display:flex;align-items:center;gap:16px;margin:4px 0 6px;}
-			.kcmcp-hd img{width:56px;height:56px;border-radius:13px;display:block;box-shadow:0 1px 4px rgba(0,0,0,.12);}
+			.kcmcp-hd img{width:56px;height:56px;border-radius:7px;display:block;box-shadow:0 1px 4px rgba(0,0,0,.12);}
 			.kcmcp-hd h1{margin:0;padding:0;font-size:23px;line-height:1.15;}
 			.kcmcp-hd .tag{color:#646970;font-size:13px;margin-top:3px;}
 			.kcmcp-ver{margin-left:auto;font-size:14px;color:#596067;padding:3px 10px;border-radius:999px;font-weight:600;letter-spacing:0.5px;}

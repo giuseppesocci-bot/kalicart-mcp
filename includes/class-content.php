@@ -43,6 +43,15 @@ class KaliCart_MCP_Content {
 		return array( 'attachment', 'product', 'product_variation' );
 	}
 
+	/** Category term IDs the owner has chosen to hide from agents (taxonomy: category). */
+	public static function excluded_term_ids(): array {
+		$ids = get_option( 'kcmcp_excluded_terms', array() );
+		if ( ! is_array( $ids ) ) {
+			return array();
+		}
+		return array_values( array_unique( array_filter( array_map( 'absint', $ids ) ) ) );
+	}
+
 	/** IDs of WooCommerce functional pages — excluded as application UI, not editorial content. */
 	public static function woo_reserved_page_ids(): array {
 		if ( ! class_exists( 'WooCommerce' ) ) {
@@ -155,7 +164,8 @@ class KaliCart_MCP_Content {
 		$type     = self::sanitize_type( $args['post_type'] ?? 'post' );
 		$per_page = self::clamp( (int) ( $args['per_page'] ?? 20 ), 1, 100 );
 		$page     = max( 1, (int) ( $args['page'] ?? 1 ) );
-		$orderby  = in_array( ( $args['orderby'] ?? 'date' ), array( 'date', 'title', 'menu_order' ), true ) ? $args['orderby'] : 'date';
+		$orderby_in = (string) ( $args['orderby'] ?? 'date' );
+		$orderby    = in_array( $orderby_in, array( 'date', 'title', 'menu_order' ), true ) ? $orderby_in : 'date';
 
 		$q_args = array(
 			'post_type'      => $type,
@@ -184,6 +194,19 @@ class KaliCart_MCP_Content {
 			array( 'key' => '_kcmcp_exclude', 'compare' => 'NOT EXISTS' ),
 			array( 'key' => '_kcmcp_exclude', 'value' => '1', 'compare' => '!=' ),
 		);
+
+		// Exclude items in owner-hidden categories.
+		$excl_terms = self::excluded_term_ids();
+		if ( ! empty( $excl_terms ) && is_object_in_taxonomy( $type, 'category' ) ) {
+			$q_args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- bounded owner-selected category set.
+				array(
+					'taxonomy' => 'category',
+					'field'    => 'term_id',
+					'terms'    => $excl_terms,
+					'operator' => 'NOT IN',
+				),
+			);
+		}
 		$query = new WP_Query( $q_args );
 		$items = array();
 		foreach ( $query->posts as $post ) {
@@ -214,7 +237,7 @@ class KaliCart_MCP_Content {
 			: array_keys( self::public_post_types() );
 
 		$s_not_in = self::woo_reserved_page_ids();
-		$query = new WP_Query( array(
+		$s_args   = array(
 			's'              => $term,
 			'post_type'      => $types,
 			'post_status'    => 'publish',
@@ -226,7 +249,21 @@ class KaliCart_MCP_Content {
 				array( 'key' => '_kcmcp_exclude', 'compare' => 'NOT EXISTS' ),
 				array( 'key' => '_kcmcp_exclude', 'value' => '1', 'compare' => '!=' ),
 			),
-		) );
+		);
+
+		// Exclude items in owner-hidden categories.
+		$excl_terms = self::excluded_term_ids();
+		if ( ! empty( $excl_terms ) ) {
+			$s_args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- bounded owner-selected category set.
+				array(
+					'taxonomy' => 'category',
+					'field'    => 'term_id',
+					'terms'    => $excl_terms,
+					'operator' => 'NOT IN',
+				),
+			);
+		}
+		$query = new WP_Query( $s_args );
 
 		$items = array();
 		foreach ( $query->posts as $post ) {
@@ -263,6 +300,10 @@ class KaliCart_MCP_Content {
 			return array( 'success' => false, 'error' => 'Content not found or not public.' );
 		}
 		if ( in_array( $post->ID, self::woo_reserved_page_ids(), true ) ) {
+			return array( 'success' => false, 'error' => 'Content not found or not public.' );
+		}
+		$excl_terms = self::excluded_term_ids();
+		if ( ! empty( $excl_terms ) && has_category( $excl_terms, $post ) ) {
 			return array( 'success' => false, 'error' => 'Content not found or not public.' );
 		}
 

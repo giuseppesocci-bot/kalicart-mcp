@@ -3,6 +3,6 @@
   <rect x="280" y="184" width="212" height="824" fill="#fff"/>
   <path d="M677 184H900V411L720 504Z" fill="#fff"/>
   <path d="M575 691L780 568L1018 1008H790Z" fill="#fff"/>
-  <path d="M900 411L780 568L575 691L720 504Z" fill="#f90"/>
-  <circle cx="936" cy="142" r="74" fill="none" stroke="#fff" stroke-width="38"/>
+  <path d="M900 411L780 568L575 691L720 504Z" fill="#f2f3f3"/>
+  <circle cx="936" cy="580" r="54" fill="#fff" stroke="#fff" stroke-width="70"/>
 </svg>

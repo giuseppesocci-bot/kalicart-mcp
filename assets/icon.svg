@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="56 -66 1196 1196" width="20" height="20" role="img" aria-label="KaliCart MCP sidebar icon">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1196" width="20" height="20" role="img" aria-label="KaliCart MCP sidebar icon">
   <rect x="280" y="184" width="212" height="824" fill="#f3f1f1"/>
   <path d="M677 184H900V411L720 504Z" fill="#f3f1f1"/>
   <path d="M575 691L780 568L1018 1008H790Z" fill="#f3f1f1"/>
   <path d="M900 411L780 568L575 691L720 504Z" fill="#f3f1f1"/>
-  <circle cx="936" cy="149" r="74" fill="none" stroke="#f3f1f1" stroke-width="38"/>
+  <circle cx="936" cy="580" r="54" fill="#f3f1f1" stroke="#f3f1f1" stroke-width="70"/>
 </svg>

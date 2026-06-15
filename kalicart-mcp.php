@@ -30,9 +30,10 @@ require_once KALICART_MCP_DIR . 'includes/class-presence.php';
 require_once KALICART_MCP_DIR . 'includes/class-bridge-hint.php';
 require_once KALICART_MCP_DIR . 'includes/class-meta-box.php';
 
-if ( is_admin() ) {
-	require_once KALICART_MCP_DIR . 'includes/class-admin.php';
-}
+// Admin class is loaded unconditionally: besides the admin screen (gated by its own
+// admin_menu/admin_enqueue hooks), it registers admin-only REST routes that must be
+// available during REST requests too (which are not is_admin()).
+require_once KALICART_MCP_DIR . 'includes/class-admin.php';
 
 add_action( 'plugins_loaded', function () {
 	KaliCart_MCP_Server::init();
@@ -40,9 +41,7 @@ add_action( 'plugins_loaded', function () {
 	KaliCart_MCP_Bridge_Hint::init();
 	KaliCart_MCP_Meta_Box::init();
 
-	if ( is_admin() ) {
-		KaliCart_MCP_Admin::init();
-	}
+	KaliCart_MCP_Admin::init();
 
 	// Version-gated: (re)write the physical .well-known mirror and flush rewrites
 	// once per plugin version, so discovery works on every install/update without

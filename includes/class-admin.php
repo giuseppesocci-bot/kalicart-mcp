@@ -15,6 +15,93 @@ class KaliCart_MCP_Admin {
 	public static function init(): void {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'menu_icon_css' ) );
+		add_action( 'rest_api_init', array( __CLASS__, 'register_admin_routes' ) );
+	}
+
+	/**
+	 * Admin-only REST routes (manage_options). These are NOT part of the public MCP
+	 * surface (the five tools); they back the exclusions UI only.
+	 */
+	public static function register_admin_routes(): void {
+		$perm = static function () {
+			return current_user_can( 'manage_options' );
+		};
+		register_rest_route(
+			KALICART_MCP_API_NS,
+			'/admin/search-posts',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( __CLASS__, 'rest_search_posts' ),
+				'permission_callback' => $perm,
+				'args'                => array(
+					'q' => array( 'type' => 'string', 'required' => false ),
+				),
+			)
+		);
+		register_rest_route(
+			KALICART_MCP_API_NS,
+			'/admin/toggle-exclude',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'rest_toggle_exclude' ),
+				'permission_callback' => $perm,
+				'args'                => array(
+					'id'     => array( 'type' => 'integer', 'required' => true ),
+					'hidden' => array( 'type' => 'boolean', 'required' => true ),
+				),
+			)
+		);
+	}
+
+	/** Search exposed posts (NOT pages) by title. Returns up to 20 matches. */
+	public static function rest_search_posts( WP_REST_Request $request ) {
+		$q     = sanitize_text_field( (string) $request->get_param( 'q' ) );
+		$types = array_keys( KaliCart_MCP_Content::public_post_types() );
+		if ( empty( $types ) || '' === $q ) {
+			return rest_ensure_response( array( 'items' => array() ) );
+		}
+		$posts = get_posts( array(
+			'post_type'      => $types,
+			'post_status'    => 'publish',
+			'posts_per_page' => 20,
+			's'              => $q,
+			'orderby'        => 'relevance',
+			'exclude'        => KaliCart_MCP_Content::woo_reserved_page_ids(), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude -- small bounded set of WooCommerce functional pages, admin-only search.
+		) );
+		$items = array();
+		foreach ( $posts as $p ) {
+			$type_obj = get_post_type_object( $p->post_type );
+			$items[]  = array(
+				'id'     => (int) $p->ID,
+				'title'  => $p->post_title ? $p->post_title : __( '(no title)', 'kalicart-mcp' ),
+				'type'   => $type_obj ? $type_obj->labels->singular_name : $p->post_type,
+				'hidden' => ( '1' === get_post_meta( $p->ID, '_kcmcp_exclude', true ) ),
+			);
+		}
+		return rest_ensure_response( array( 'items' => $items ) );
+	}
+
+	/** Hide/show a single post or page from agents by toggling its _kcmcp_exclude meta. */
+	public static function rest_toggle_exclude( WP_REST_Request $request ) {
+		$id     = absint( $request->get_param( 'id' ) );
+		$hidden = (bool) $request->get_param( 'hidden' );
+		$post   = $id ? get_post( $id ) : null;
+		if ( ! $post ) {
+			return new WP_Error( 'kcmcp_not_found', __( 'Item not found.', 'kalicart-mcp' ), array( 'status' => 404 ) );
+		}
+		if ( ! current_user_can( 'edit_post', $id ) ) {
+			return new WP_Error( 'kcmcp_forbidden', __( 'Not allowed.', 'kalicart-mcp' ), array( 'status' => 403 ) );
+		}
+		// Only allow toggling content types we actually expose.
+		if ( ! array_key_exists( $post->post_type, KaliCart_MCP_Content::public_post_types() ) ) {
+			return new WP_Error( 'kcmcp_not_exposed', __( 'This content type is not exposed.', 'kalicart-mcp' ), array( 'status' => 400 ) );
+		}
+		if ( $hidden ) {
+			update_post_meta( $id, '_kcmcp_exclude', '1' );
+		} else {
+			delete_post_meta( $id, '_kcmcp_exclude' );
+		}
+		return rest_ensure_response( array( 'id' => $id, 'hidden' => $hidden ) );
 	}
 
 	public static function menu(): void {
@@ -73,9 +160,8 @@ class KaliCart_MCP_Admin {
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Exposure settings saved.', 'kalicart-mcp' ) . '</p></div>';
 		}
 
-		// Save the content-exclusion choices (hidden categories + hidden individual items).
-		if ( isset( $_POST['kcmcp_save_exclusions'] ) && check_admin_referer( 'kcmcp_exclusions' ) ) {
-			// Hidden categories.
+		// Save the excluded categories (batch). Individual posts/pages toggle live via REST.
+		if ( isset( $_POST['kcmcp_save_categories'] ) && check_admin_referer( 'kcmcp_categories' ) ) {
 			$terms = isset( $_POST['kcmcp_terms'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['kcmcp_terms'] ) ) : array();
 			$valid = array();
 			foreach ( $terms as $tid ) {
@@ -84,21 +170,7 @@ class KaliCart_MCP_Admin {
 				}
 			}
 			update_option( 'kcmcp_excluded_terms', array_values( array_unique( $valid ) ) );
-
-			// Hidden individual items: reconcile the candidate list against the checked set.
-			$candidates = isset( $_POST['kcmcp_item_ids'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['kcmcp_item_ids'] ) ) : array();
-			$checked    = isset( $_POST['kcmcp_items'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['kcmcp_items'] ) ) : array();
-			foreach ( $candidates as $pid ) {
-				if ( $pid <= 0 || ! current_user_can( 'edit_post', $pid ) ) {
-					continue;
-				}
-				if ( in_array( $pid, $checked, true ) ) {
-					update_post_meta( $pid, '_kcmcp_exclude', '1' );
-				} else {
-					delete_post_meta( $pid, '_kcmcp_exclude' );
-				}
-			}
-			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Exclusion settings saved.', 'kalicart-mcp' ) . '</p></div>';
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Excluded categories saved.', 'kalicart-mcp' ) . '</p></div>';
 		}
 
 		$endpoint  = rest_url( KALICART_MCP_API_NS . '/mcp' );
@@ -136,7 +208,17 @@ class KaliCart_MCP_Admin {
 			.kcmcp-checklist{display:flex;flex-wrap:wrap;gap:8px 18px;}
 			.kcmcp-check{display:flex;align-items:center;gap:7px;font-size:13px;color:#1d2327;cursor:pointer;}
 			.kcmcp-check input{margin:0;}
-			.kcmcp-itemlist{flex-direction:column;flex-wrap:nowrap;gap:6px;max-height:300px;overflow:auto;border:1px solid #f0f0f0;border-radius:8px;padding:10px 12px;background:#fafafa;}
+			.kcmcp-search{width:100%;max-width:420px;padding:8px 12px;border:1px solid #dcdcde;border-radius:8px;font-size:13px;margin-top:8px;}
+			.kcmcp-search:focus{outline:none;border-color:#f80;box-shadow:0 0 0 1px #f80;}
+			.kcmcp-togglelist{display:flex;flex-direction:column;gap:2px;margin-top:6px;}
+			.kcmcp-togglelist:empty{margin:0;}
+			.kcmcp-trow{display:flex;align-items:center;gap:11px;padding:7px 4px;cursor:pointer;user-select:none;border-bottom:1px solid #f3f3f3;}
+			.kcmcp-trow:last-child{border-bottom:none;}
+			.kcmcp-trow input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;pointer-events:none;}
+			.kcmcp-trow input:checked + .kcmcp-tog-track{background:#f80;}
+			.kcmcp-trow input:checked + .kcmcp-tog-track .kcmcp-tog-thumb{left:23px;}
+			.kcmcp-trow input:disabled + .kcmcp-tog-track{opacity:.5;}
+			.kcmcp-trow-title{font-size:13px;color:#1d2327;}
 			.kcmcp-pre{background:#1d2327;color:#f3f1f1;border-radius:8px;padding:13px;font-size:12.5px;overflow:auto;margin:8px 0 0;line-height:1.5;}
 			.kcmcp-foot{color:#646970;font-size:12.5px;margin-top:20px;padding-top:13px;border-top:1px solid #e6e6e6;}
 			.kcmcp-foot b{color:#f80;}
@@ -201,31 +283,39 @@ class KaliCart_MCP_Admin {
 			<?php
 			$excl_terms = KaliCart_MCP_Content::excluded_term_ids();
 			$categories = get_categories( array( 'hide_empty' => false ) );
-			$reserved_ids = KaliCart_MCP_Content::woo_reserved_page_ids();
 			$exposed_types = array_keys( KaliCart_MCP_Content::public_post_types() );
-			$items = array();
+
+			// Content (posts, pages, public CPTs): potentially thousands — never preload.
+			// Show only the already-hidden items; everything else is reachable via search.
+			$hidden_items = array();
 			if ( ! empty( $exposed_types ) ) {
-				$items = get_posts( array(
+				$hidden_items = get_posts( array(
 					'post_type'      => $exposed_types,
 					'post_status'    => 'publish',
-					'posts_per_page' => 100,
-					'orderby'        => 'modified',
-					'order'          => 'DESC',
-					'exclude'        => $reserved_ids, // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude -- small bounded set of WooCommerce functional pages in an admin-only listing.
+					'posts_per_page' => 200,
+					'meta_key'       => '_kcmcp_exclude', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- admin-only listing of already-hidden items.
+					'meta_value'     => '1', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- admin-only listing of already-hidden items.
+					'exclude'        => KaliCart_MCP_Content::woo_reserved_page_ids(), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude -- small bounded set of WooCommerce functional pages.
 				) );
 			}
+			$rest_base = esc_url_raw( rest_url( KALICART_MCP_API_NS ) );
+			$rest_nonce = wp_create_nonce( 'wp_rest' );
 			?>
 			<div class="kcmcp-card">
 				<h2><?php esc_html_e( 'Content exclusions', 'kalicart-mcp' ); ?></h2>
-				<p class="kcmcp-muted"><?php esc_html_e( 'Hide whole categories (handy for test or staging content) or individual posts and pages from AI agents. Hidden items disappear from listings, search, and direct retrieval.', 'kalicart-mcp' ); ?></p>
-				<form method="post" style="margin-top:12px;">
-					<?php wp_nonce_field( 'kcmcp_exclusions' ); ?>
+				<p class="kcmcp-muted"><?php esc_html_e( 'Hide content from AI agents. Hidden items disappear from listings, search, and direct retrieval. You can also hide any single item from its editor sidebar.', 'kalicart-mcp' ); ?></p>
 
+				<?php
+				// --- Categories (batch form) ---
+				?>
+				<form method="post" style="margin-top:14px;">
+					<?php wp_nonce_field( 'kcmcp_categories' ); ?>
 					<h3 class="kcmcp-sub"><?php esc_html_e( 'Categories', 'kalicart-mcp' ); ?></h3>
+					<p class="kcmcp-muted"><?php esc_html_e( 'Hide every post in a category — handy for test or staging content.', 'kalicart-mcp' ); ?></p>
 					<?php if ( empty( $categories ) ) : ?>
 						<p class="kcmcp-muted"><?php esc_html_e( 'No categories found.', 'kalicart-mcp' ); ?></p>
 					<?php else : ?>
-					<div class="kcmcp-checklist">
+					<div class="kcmcp-checklist" style="margin-top:8px;">
 						<?php foreach ( $categories as $cat ) : ?>
 						<label class="kcmcp-check">
 							<input type="checkbox" name="kcmcp_terms[]" value="<?php echo (int) $cat->term_id; ?>" <?php checked( in_array( (int) $cat->term_id, $excl_terms, true ) ); ?> />
@@ -233,31 +323,34 @@ class KaliCart_MCP_Admin {
 						</label>
 						<?php endforeach; ?>
 					</div>
+					<div style="margin-top:12px;"><button type="submit" name="kcmcp_save_categories" value="1" class="kcmcp-copy" style="padding:7px 18px;"><?php esc_html_e( 'Save categories', 'kalicart-mcp' ); ?></button></div>
 					<?php endif; ?>
-
-					<h3 class="kcmcp-sub"><?php esc_html_e( 'Individual posts and pages', 'kalicart-mcp' ); ?></h3>
-					<?php if ( empty( $items ) ) : ?>
-						<p class="kcmcp-muted"><?php esc_html_e( 'No exposed content yet.', 'kalicart-mcp' ); ?></p>
-					<?php else : ?>
-					<p class="kcmcp-muted"><?php echo esc_html( sprintf( /* translators: %d: number of items shown */ __( 'Showing the %d most recently updated items. Check an item to hide it.', 'kalicart-mcp' ), count( $items ) ) ); ?></p>
-					<div class="kcmcp-checklist kcmcp-itemlist">
-						<?php foreach ( $items as $it ) :
-							$is_hidden = ( '1' === get_post_meta( $it->ID, '_kcmcp_exclude', true ) );
-							$type_obj  = get_post_type_object( $it->post_type );
-							$type_lbl  = $type_obj ? $type_obj->labels->singular_name : $it->post_type;
-							?>
-						<label class="kcmcp-check">
-							<input type="hidden" name="kcmcp_item_ids[]" value="<?php echo (int) $it->ID; ?>" />
-							<input type="checkbox" name="kcmcp_items[]" value="<?php echo (int) $it->ID; ?>" <?php checked( $is_hidden ); ?> />
-							<span><?php echo esc_html( $it->post_title ? $it->post_title : __( '(no title)', 'kalicart-mcp' ) ); ?> <span class="kcmcp-muted">&middot; <?php echo esc_html( $type_lbl ); ?></span></span>
-						</label>
-						<?php endforeach; ?>
-					</div>
-					<?php endif; ?>
-
-					<div style="margin-top:14px;"><button type="submit" name="kcmcp_save_exclusions" value="1" class="kcmcp-copy" style="padding:7px 18px;"><?php esc_html_e( 'Save exclusions', 'kalicart-mcp' ); ?></button></div>
 				</form>
+
+				<?php if ( ! empty( $exposed_types ) ) : ?>
+				<h3 class="kcmcp-sub" style="margin-top:22px;"><?php esc_html_e( 'Posts and pages', 'kalicart-mcp' ); ?></h3>
+				<p class="kcmcp-muted"><?php esc_html_e( 'Search by title, then toggle an item to hide it from agents.', 'kalicart-mcp' ); ?></p>
+				<input type="search" id="kcmcp-post-search" class="kcmcp-search" placeholder="<?php esc_attr_e( 'Type a title…', 'kalicart-mcp' ); ?>" autocomplete="off" />
+				<div id="kcmcp-search-results" class="kcmcp-togglelist" style="margin-top:8px;"></div>
+
+				<?php if ( ! empty( $hidden_items ) ) : ?>
+				<p class="kcmcp-muted" style="margin-top:16px;"><?php esc_html_e( 'Currently hidden:', 'kalicart-mcp' ); ?></p>
+				<div id="kcmcp-hidden-posts" class="kcmcp-togglelist">
+					<?php foreach ( $hidden_items as $hp ) :
+						$type_obj = get_post_type_object( $hp->post_type );
+						$type_lbl = $type_obj ? $type_obj->labels->singular_name : $hp->post_type;
+						?>
+					<label class="kcmcp-trow">
+						<input type="checkbox" class="kcmcp-xtoggle" data-id="<?php echo (int) $hp->ID; ?>" checked />
+						<span class="kcmcp-tog-track"><span class="kcmcp-tog-thumb"></span></span>
+						<span class="kcmcp-trow-title"><?php echo esc_html( $hp->post_title ? $hp->post_title : __( '(no title)', 'kalicart-mcp' ) ); ?> <span class="kcmcp-muted">&middot; <?php echo esc_html( $type_lbl ); ?></span></span>
+					</label>
+					<?php endforeach; ?>
+				</div>
+				<?php endif; ?>
+				<?php endif; ?>
 			</div>
+
 
 			<div class="kcmcp-card">
 				<h2><?php esc_html_e( 'Endpoint', 'kalicart-mcp' ); ?></h2>
@@ -328,6 +421,76 @@ class KaliCart_MCP_Admin {
 						var o = btn.innerText; btn.innerText = '\u2713 ' + o; setTimeout(function(){ btn.innerText = o; }, 1200);
 					});
 				});
+			});
+
+			var KCMCP = {
+				base:  <?php echo wp_json_encode( $rest_base ); ?>,
+				nonce: <?php echo wp_json_encode( $rest_nonce ); ?>,
+				t: {
+					noResults: <?php echo wp_json_encode( __( 'No matching posts.', 'kalicart-mcp' ) ); ?>,
+					searching: <?php echo wp_json_encode( __( 'Searching…', 'kalicart-mcp' ) ); ?>,
+					error: <?php echo wp_json_encode( __( 'Search failed. Try again.', 'kalicart-mcp' ) ); ?>
+				}
+			};
+
+			function kcmcpToggle(cb){
+				var id = parseInt(cb.getAttribute('data-id'), 10);
+				var hidden = cb.checked;
+				cb.disabled = true;
+				fetch(KCMCP.base + '/admin/toggle-exclude', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': KCMCP.nonce },
+					body: JSON.stringify({ id: id, hidden: hidden })
+				}).then(function(r){ return r.ok ? r.json() : Promise.reject(r); })
+				.then(function(){ cb.disabled = false; })
+				.catch(function(){ cb.checked = !hidden; cb.disabled = false; });
+			}
+
+			function kcmcpRow(item){
+				var label = document.createElement('label');
+				label.className = 'kcmcp-trow';
+				var cb = document.createElement('input');
+				cb.type = 'checkbox'; cb.className = 'kcmcp-xtoggle';
+				cb.setAttribute('data-id', item.id); cb.checked = !!item.hidden;
+				var track = document.createElement('span'); track.className = 'kcmcp-tog-track';
+				var thumb = document.createElement('span'); thumb.className = 'kcmcp-tog-thumb';
+				track.appendChild(thumb);
+				var title = document.createElement('span'); title.className = 'kcmcp-trow-title';
+				title.textContent = item.title;
+				if (item.type) {
+					var t = document.createElement('span'); t.className = 'kcmcp-muted';
+					t.textContent = ' \u00b7 ' + item.type; title.appendChild(t);
+				}
+				label.appendChild(cb); label.appendChild(track); label.appendChild(title);
+				return label;
+			}
+
+			var search = document.getElementById('kcmcp-post-search');
+			var results = document.getElementById('kcmcp-search-results');
+			if (search && results) {
+				var timer = null;
+				search.addEventListener('input', function(){
+					var q = search.value.trim();
+					clearTimeout(timer);
+					if (q.length < 2) { results.innerHTML = ''; return; }
+					results.textContent = KCMCP.t.searching;
+					timer = setTimeout(function(){
+						fetch(KCMCP.base + '/admin/search-posts?q=' + encodeURIComponent(q), {
+							headers: { 'X-WP-Nonce': KCMCP.nonce }
+						}).then(function(r){ return r.ok ? r.json() : Promise.reject(r); })
+					.then(function(data){
+						results.innerHTML = '';
+						if (!data.items || !data.items.length) { results.textContent = KCMCP.t.noResults; return; }
+						data.items.forEach(function(it){ results.appendChild(kcmcpRow(it)); });
+					}).catch(function(){ results.textContent = KCMCP.t.error; });
+					}, 280);
+				});
+			}
+
+			document.addEventListener('change', function(e){
+				if (e.target && e.target.classList && e.target.classList.contains('kcmcp-xtoggle')) {
+					kcmcpToggle(e.target);
+				}
 			});
 		})();
 		</script>

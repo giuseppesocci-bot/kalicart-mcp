@@ -195,12 +195,12 @@ class KaliCart_MCP_Admin {
 			.kcmcp-togglelist{display:flex;flex-direction:column;gap:2px;margin-top:6px;}
 			.kcmcp-togglelist:empty{margin:0;}
 			.kcmcp-trow{display:flex;align-items:center;gap:11px;padding:7px 4px;user-select:none;border-bottom:1px solid #f3f3f3;}
-			.kcmcp-trow .kcmcp-switch{position:relative;display:inline-flex;align-items:center;cursor:pointer;flex:0 0 auto;overflow:hidden;}
+			.kcmcp-switch{position:relative;display:inline-flex;align-items:center;cursor:pointer;flex:0 0 auto;}
 			.kcmcp-trow:last-child{border-bottom:none;}
-			.kcmcp-trow .kcmcp-switch input[type=checkbox]{position:absolute;top:0;left:0;opacity:0;width:0;height:0;margin:0;pointer-events:none;}
-			.kcmcp-trow input:checked + .kcmcp-tog-track{background:#f80;}
-			.kcmcp-trow input:checked + .kcmcp-tog-track .kcmcp-tog-thumb{left:23px;}
-			.kcmcp-trow input:disabled + .kcmcp-tog-track{opacity:.5;}
+			.kcmcp-switch input[type=checkbox]{position:absolute;top:0;left:0;opacity:0;width:0;height:0;margin:0;pointer-events:none;}
+			.kcmcp-switch input:checked + .kcmcp-tog-track{background:#f80;}
+			.kcmcp-switch input:checked + .kcmcp-tog-track .kcmcp-tog-thumb{left:23px;}
+			.kcmcp-switch input:disabled + .kcmcp-tog-track{opacity:.5;}
 			.kcmcp-trow-title{font-size:13px;color:#1d2327;}
 			.kcmcp-pre{background:#1d2327;color:#f3f1f1;border-radius:8px;padding:13px;font-size:12.5px;overflow:auto;margin:8px 0 0;line-height:1.5;}
 			.kcmcp-foot{color:#646970;font-size:12.5px;margin-top:20px;padding-top:13px;border-top:1px solid #e6e6e6;}
@@ -208,11 +208,8 @@ class KaliCart_MCP_Admin {
 			.kcmcp-link{color:#d97600;text-decoration:none;font-weight:500;}
 			.kcmcp-link:hover{color:#f80;text-decoration:underline;}
 			.kcmcp-toggle{display:flex;align-items:center;gap:12px;margin:12px 0;user-select:none;}
-			.kcmcp-toggle .kcmcp-switch input[type=checkbox]{position:absolute;top:0;left:0;opacity:0;width:0;height:0;margin:0;pointer-events:none;}
 			.kcmcp-tog-track{position:relative;width:44px;height:24px;background:#c3c4c7;border-radius:12px;transition:background .18s;flex:0 0 44px;}
 			.kcmcp-tog-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:left .18s;box-shadow:0 1px 3px rgba(0,0,0,.28);}
-			.kcmcp-toggle input:checked + .kcmcp-tog-track{background:#f80;}
-			.kcmcp-toggle input:checked + .kcmcp-tog-track .kcmcp-tog-thumb{left:23px;}
 			.kcmcp-tog-label{font-size:13px;color:#1d2327;line-height:1.4;}
 			.kcmcp-tog-note{font-size:11.5px;color:#646970;margin-top:1px;}
 		</style>

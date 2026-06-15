@@ -1,5 +1,10 @@
 *** KaliCart MCP Changelog ***
 
+2026-06-15 - version 0.2.4
+
+* Fix: restore toggle switch styling (a clipping rule was hiding the switch track); switch styles are now unified across both toggle sections.
+
+
 2026-06-15 - version 0.2.3
 
 * Fix: the "Content exposure" toggles now react only to the switch, not to clicks on the type label — same scheme as the exclusion list.

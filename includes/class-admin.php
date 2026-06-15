@@ -207,9 +207,10 @@ class KaliCart_MCP_Admin {
 			.kcmcp-sub{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#646970;margin:16px 0 8px;font-weight:600;}
 			.kcmcp-checklist{display:flex;flex-wrap:wrap;gap:8px 18px;}
 			.kcmcp-check{display:flex;align-items:center;gap:7px;font-size:13px;color:#1d2327;cursor:pointer;}
-			.kcmcp-check input{margin:0;}
+			.kcmcp-check input{margin:0;min-width:14px;min-height:14px;border:1px solid #bebebe;border-radius:4px;}
 			.kcmcp-search{width:100%;max-width:420px;padding:8px 12px;border:1px solid #dcdcde;border-radius:8px;font-size:13px;margin-top:8px;}
 			.kcmcp-search:focus{outline:none;border-color:#f80;box-shadow:0 0 0 1px #f80;}
+			#kcmcp-post-search{border-radius:8px;border:1px solid #bebebe;}
 			.kcmcp-togglelist{display:flex;flex-direction:column;gap:2px;margin-top:6px;}
 			.kcmcp-togglelist:empty{margin:0;}
 			.kcmcp-trow{display:flex;align-items:center;gap:11px;padding:7px 4px;cursor:pointer;user-select:none;border-bottom:1px solid #f3f3f3;}

@@ -1,0 +1,197 @@
+# KaliCart MCP — Français
+# Copyright (C) 2026 KaliCart
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: KaliCart MCP 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/kalicart-mcp\n"
+"Language-Team: Français\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: kalicart-mcp\n"
+
+#: includes/class-admin.php:76
+#: includes/class-admin.php:346
+msgid "(no title)"
+msgstr "(sans titre)"
+
+#: includes/class-admin.php:90
+msgid "Item not found."
+msgstr "Élément introuvable."
+
+#: includes/class-admin.php:93
+msgid "Not allowed."
+msgstr "Action non autorisée."
+
+#: includes/class-admin.php:97
+msgid "This content type is not exposed."
+msgstr "Ce type de contenu n'est pas exposé."
+
+#: includes/class-admin.php:160
+msgid "Exposure settings saved."
+msgstr "Paramètres d'exposition enregistrés."
+
+#: includes/class-admin.php:173
+msgid "Excluded categories saved."
+msgstr "Catégories exclues enregistrées."
+
+#: includes/class-admin.php:242
+msgid "Agent-callable WordPress content and tools"
+msgstr "Contenus et outils WordPress appelables par les agents"
+
+#: includes/class-admin.php:248
+msgid "Status"
+msgstr "État"
+
+#: includes/class-admin.php:249
+msgid "MCP server active — this site is callable by AI agents."
+msgstr "Serveur MCP actif — ce site est appelable par les agents IA."
+
+#. translators: %s: protocol version
+#: includes/class-admin.php:250
+#, php-format
+msgid "Model Context Protocol · JSON-RPC 2.0 · protocol %s"
+msgstr "Model Context Protocol · JSON-RPC 2.0 · protocole %s"
+
+#: includes/class-admin.php:254
+msgid "Content exposure"
+msgstr "Exposition des contenus"
+
+#: includes/class-admin.php:255
+msgid "Choose which content types AI agents can read. Products (WooCommerce) are handled by KaliCart Bridge, not here."
+msgstr "Choisis les types de contenu que les agents IA peuvent lire. Les produits (WooCommerce) sont gérés par KaliCart Bridge, pas ici."
+
+#: includes/class-admin.php:279
+msgid "Save"
+msgstr "Enregistrer"
+
+#: includes/class-admin.php:305
+msgid "Content exclusions"
+msgstr "Exclusions de contenus"
+
+#: includes/class-admin.php:306
+msgid "Hide content from AI agents. Hidden items disappear from listings, search, and direct retrieval. You can also hide any single item from its editor sidebar."
+msgstr "Masque des contenus aux agents IA. Les éléments masqués disparaissent des listes, de la recherche et de l'accès direct. Tu peux aussi masquer un élément depuis la barre latérale de son éditeur."
+
+#: includes/class-admin.php:313
+msgid "Categories"
+msgstr "Catégories"
+
+#: includes/class-admin.php:314
+msgid "Hide every post in a category — handy for test or staging content."
+msgstr "Masque tous les articles d'une catégorie — pratique pour les contenus de test ou de préproduction."
+
+#: includes/class-admin.php:316
+msgid "No categories found."
+msgstr "Aucune catégorie trouvée."
+
+#: includes/class-admin.php:326
+msgid "Save categories"
+msgstr "Enregistrer les catégories"
+
+#: includes/class-admin.php:331
+msgid "Posts and pages"
+msgstr "Articles et pages"
+
+#: includes/class-admin.php:332
+msgid "Search by title, then toggle an item to hide it from agents."
+msgstr "Recherche par titre, puis bascule un élément pour le masquer aux agents."
+
+#: includes/class-admin.php:333
+msgid "Type a title…"
+msgstr "Saisis un titre…"
+
+#: includes/class-admin.php:337
+#: includes/class-admin.php:434
+msgid "Currently hidden:"
+msgstr "Actuellement masqués :"
+
+#: includes/class-admin.php:356
+msgid "Endpoint"
+msgstr "Point de terminaison"
+
+#: includes/class-admin.php:357
+msgid "Point any MCP client at this URL (JSON-RPC 2.0 over HTTP POST):"
+msgstr "Dirige n'importe quel client MCP vers cette URL (JSON-RPC 2.0 via HTTP POST) :"
+
+#: includes/class-admin.php:360
+msgid "Copy"
+msgstr "Copier"
+
+#: includes/class-admin.php:363
+msgid "Discovery document:"
+msgstr "Document de discovery :"
+
+#: includes/class-admin.php:369
+msgid "Tools exposed"
+msgstr "Outils exposés"
+
+#: includes/class-admin.php:378
+msgid "Connect from Claude Desktop"
+msgstr "Se connecter depuis Claude Desktop"
+
+#: includes/class-admin.php:379
+msgid "Add this to claude_desktop_config.json (uses mcp-remote):"
+msgstr "Ajoute ceci à claude_desktop_config.json (utilise mcp-remote) :"
+
+#: includes/class-admin.php:381
+msgid "Copy config"
+msgstr "Copier la configuration"
+
+#: includes/class-admin.php:386
+msgid "WooCommerce"
+msgstr "WooCommerce"
+
+#: includes/class-admin.php:388
+msgid "KaliCart Bridge is active — your product catalog is served to agents by the Bridge. MCP handles content, Bridge handles commerce."
+msgstr "KaliCart Bridge est actif — ton catalogue de produits est servi aux agents par le Bridge. MCP gère le contenu, Bridge gère le commerce."
+
+#. translators: %s: link to KaliCart Bridge
+#: includes/class-admin.php:395
+#, php-format
+msgid "MCP serves your pages and posts. For an agent-readable <em>product catalog</em> (prices, variants, stock, semantic filters), install %s — MCP for content, Bridge for commerce."
+msgstr "MCP sert tes pages et tes articles. Pour un <em>catalogue de produits</em> lisible par les agents (prix, variantes, stock, filtres sémantiques), installe %s — MCP pour le contenu, Bridge pour le commerce."
+
+#: includes/class-admin.php:410
+msgid "ideatore / creator"
+msgstr "creator"
+
+#: includes/class-admin.php:430
+msgid "No matching content."
+msgstr "Aucun contenu correspondant."
+
+#: includes/class-admin.php:431
+msgid "Searching…"
+msgstr "Recherche en cours…"
+
+#: includes/class-admin.php:432
+msgid "Search failed. Try again."
+msgstr "Échec de la recherche. Réessaie."
+
+#: includes/class-admin.php:433
+msgid "Could not save. Reload the page and try again."
+msgstr "Enregistrement impossible. Recharge la page et réessaie."
+
+#. translators: %s: link to KaliCart Bridge
+#: includes/class-bridge-hint.php:71
+#, php-format
+msgid "<strong>KaliCart MCP</strong> makes this site's content callable by AI agents — but it detected <strong>WooCommerce</strong>. MCP exposes pages and posts only; it does <em>not</em> serve a computable product catalog (prices, variants, stock, semantic filters). For that, install %s: it publishes your catalog in an agent-readable form. The two are complementary — MCP for content, Bridge for commerce."
+msgstr "<strong>KaliCart MCP</strong> rend le contenu de ce site appelable par les agents IA — mais il a détecté <strong>WooCommerce</strong>. MCP n'expose que les pages et les articles ; il ne sert <em>pas</em> de catalogue de produits exploitable (prix, variantes, stock, filtres sémantiques). Pour cela, installe %s : il publie ton catalogue sous une forme lisible par les agents. Les deux sont complémentaires — MCP pour le contenu, Bridge pour le commerce."
+
+#: includes/class-bridge-hint.php:84
+msgid "Dismiss"
+msgstr "Ignorer"
+
+#: includes/class-meta-box.php:64
+msgid "Hide from AI agents"
+msgstr "Masquer aux agents IA"
+
+#: includes/class-meta-box.php:69
+msgid "This content is currently hidden from all AI agents."
+msgstr "Ce contenu est actuellement masqué à tous les agents IA."
+
+#: includes/class-meta-box.php:71
+msgid "This content is visible to AI agents via KaliCart MCP."
+msgstr "Ce contenu est visible par les agents IA via KaliCart MCP."

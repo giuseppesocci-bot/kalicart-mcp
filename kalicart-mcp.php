@@ -36,6 +36,11 @@ require_once KALICART_MCP_DIR . 'includes/class-meta-box.php';
 require_once KALICART_MCP_DIR . 'includes/class-admin.php';
 
 add_action( 'plugins_loaded', function () {
+	// Load translations (.mo from /languages). Hooked on 'init' per WP 6.7+ guidance.
+	add_action( 'init', function () {
+		load_plugin_textdomain( 'kalicart-mcp', false, dirname( plugin_basename( KALICART_MCP_FILE ) ) . '/languages' );
+	} );
+
 	KaliCart_MCP_Server::init();
 	KaliCart_MCP_Presence::init();
 	KaliCart_MCP_Bridge_Hint::init();

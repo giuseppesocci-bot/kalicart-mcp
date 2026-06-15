@@ -14,7 +14,6 @@ class KaliCart_MCP_Admin {
 
 	public static function init(): void {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
-		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'menu_icon_css' ) );
 		add_action( 'rest_api_init', array( __CLASS__, 'register_admin_routes' ) );
 	}
 
@@ -117,34 +116,16 @@ class KaliCart_MCP_Admin {
 	}
 
 	private static function icon_data_uri(): string {
-		$file = KALICART_MCP_DIR . 'assets/icon.svg';
-		if ( is_readable( $file ) ) {
-			return 'data:image/svg+xml;base64,' . base64_encode( file_get_contents( $file ) ); // phpcs:ignore
-		}
-		return 'dashicons-rest-api';
+		// Base64-encoded inline SVG for the menu icon (same scheme as KaliCart Bridge).
+		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1196" fill="#f3f1f1">'
+			. '<rect x="280" y="184" width="212" height="824"/>'
+			. '<path d="M677 184H900V411L720 504Z"/>'
+			. '<path d="M575 691L780 568L1018 1008H790Z"/>'
+			. '<path d="M900 411L780 568L575 691L720 504Z"/>'
+			. '</svg>';
+		return 'data:image/svg+xml;base64,' . base64_encode( $svg );
 	}
 
-	/** Recolor the menu icon to the admin scheme on every theme (mask + currentColor). */
-	public static function menu_icon_css(): void {
-		$file = KALICART_MCP_DIR . 'assets/icon.svg';
-		if ( ! is_readable( $file ) ) {
-			return;
-		}
-		$svg = file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local bundled asset
-		if ( false === $svg ) {
-			return;
-		}
-		// URL-encode the SVG (no base64): safely embeddable in a CSS url() value.
-		$uri  = 'data:image/svg+xml,' . rawurlencode( $svg );
-		$sel  = '#adminmenu #toplevel_page_' . self::SLUG;
-		$css  = $sel . ' .wp-menu-image{background:none!important;}';
-		$css .= $sel . ' .wp-menu-image::before{content:"";display:block;width:20px;height:20px;margin:7px auto;background-color:currentColor;';
-		$css .= '-webkit-mask:url("' . $uri . '") no-repeat center;-webkit-mask-size:contain;';
-		$css .= 'mask:url("' . $uri . '") no-repeat center;mask-size:contain;}';
-		wp_register_style( 'kalicart-mcp-menu', false, array(), KALICART_MCP_VERSION );
-		wp_enqueue_style( 'kalicart-mcp-menu' );
-		wp_add_inline_style( 'kalicart-mcp-menu', $css );
-	}
 
 	public static function render(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {

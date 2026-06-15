@@ -4,7 +4,7 @@ Tags: mcp, ai, agents, markdown, content
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.2.0
+Stable tag: 0.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,6 +71,10 @@ No. WooCommerce is optional. If it is installed, the relevant functional pages a
 
 == Changelog ==
 
+= 0.2.1 =
+* Fix: sidebar menu icon now uses the same inline-SVG scheme as KaliCart Bridge (correct alignment, no CSS mask).
+* Fix: exclusion row toggles switch only via the switch control, not by clicking the row.
+
 = 0.2.0 =
 * Admin: content exclusion controls — hide categories, individual posts and pages from AI agents via instant toggles, plus a per-item "Hide from AI agents" switch in the editor sidebar.
 * Admin: unified post/page search with AJAX toggles and a live-updating "currently hidden" list.
@@ -89,6 +93,9 @@ No. WooCommerce is optional. If it is installed, the relevant functional pages a
 * Per-item "Hide from AI agents" control in the editor.
 
 == Upgrade Notice ==
+
+= 0.2.1 =
+Minor admin UI fixes (menu icon and toggle behavior).
 
 = 0.2.0 =
 Adds content exclusion controls, automatic WooCommerce page exclusion, and IT/DE/FR/ES translations.

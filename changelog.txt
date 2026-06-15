@@ -1,5 +1,11 @@
 *** KaliCart MCP Changelog ***
 
+2026-06-15 - version 0.2.1
+
+* Fix: sidebar menu icon now uses the same inline-SVG scheme as KaliCart Bridge (correct alignment, no CSS mask).
+* Fix: exclusion row toggles switch only via the switch control, not by clicking the row.
+
+
 2026-06-15 - version 0.2.0
 
 * Admin: content exclusion controls — hide categories, individual posts and pages from AI agents via instant toggles, plus a per-item "Hide from AI agents" switch in the editor sidebar.

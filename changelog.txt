@@ -1,5 +1,10 @@
 *** KaliCart MCP Changelog ***
 
+2026-06-15 - version 0.2.2
+
+* Fix: clicking a row's title no longer toggles it — the hidden checkbox is now confined to the switch control instead of overflowing the whole row.
+
+
 2026-06-15 - version 0.2.1
 
 * Fix: sidebar menu icon now uses the same inline-SVG scheme as KaliCart Bridge (correct alignment, no CSS mask).

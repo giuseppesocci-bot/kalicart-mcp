@@ -195,9 +195,9 @@ class KaliCart_MCP_Admin {
 			.kcmcp-togglelist{display:flex;flex-direction:column;gap:2px;margin-top:6px;}
 			.kcmcp-togglelist:empty{margin:0;}
 			.kcmcp-trow{display:flex;align-items:center;gap:11px;padding:7px 4px;user-select:none;border-bottom:1px solid #f3f3f3;}
-			.kcmcp-trow .kcmcp-switch{display:inline-flex;align-items:center;cursor:pointer;flex:0 0 auto;}
+			.kcmcp-trow .kcmcp-switch{position:relative;display:inline-flex;align-items:center;cursor:pointer;flex:0 0 auto;overflow:hidden;}
 			.kcmcp-trow:last-child{border-bottom:none;}
-			.kcmcp-trow input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;pointer-events:none;}
+			.kcmcp-trow .kcmcp-switch input[type=checkbox]{position:absolute;top:0;left:0;opacity:0;width:0;height:0;margin:0;pointer-events:none;}
 			.kcmcp-trow input:checked + .kcmcp-tog-track{background:#f80;}
 			.kcmcp-trow input:checked + .kcmcp-tog-track .kcmcp-tog-thumb{left:23px;}
 			.kcmcp-trow input:disabled + .kcmcp-tog-track{opacity:.5;}

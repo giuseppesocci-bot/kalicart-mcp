@@ -4,7 +4,7 @@ Tags: mcp, ai, agents, markdown, content
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.2.1
+Stable tag: 0.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,6 +71,9 @@ No. WooCommerce is optional. If it is installed, the relevant functional pages a
 
 == Changelog ==
 
+= 0.2.2 =
+* Fix: clicking a row's title no longer toggles it — the hidden checkbox is now confined to the switch control instead of overflowing the whole row.
+
 = 0.2.1 =
 * Fix: sidebar menu icon now uses the same inline-SVG scheme as KaliCart Bridge (correct alignment, no CSS mask).
 * Fix: exclusion row toggles switch only via the switch control, not by clicking the row.
@@ -93,6 +96,9 @@ No. WooCommerce is optional. If it is installed, the relevant functional pages a
 * Per-item "Hide from AI agents" control in the editor.
 
 == Upgrade Notice ==
+
+= 0.2.2 =
+Fixes the exclusion toggle reacting to clicks on the whole row.
 
 = 0.2.1 =
 Minor admin UI fixes (menu icon and toggle behavior).

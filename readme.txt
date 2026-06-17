@@ -4,7 +4,7 @@ Tags: mcp, ai, agents, markdown, content
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.2.7
+Stable tag: 0.2.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,10 @@ Yes. Each post and page has a "Hide from AI agents" checkbox in the editor sideb
 No. WooCommerce is optional. If it is installed, the relevant functional pages are detected and excluded automatically.
 
 == Changelog ==
+
+= 0.2.8 =
+* Hardening: reviewed all REST routes for WordPress.org compliance. Read-only public MCP endpoints declare an explicit public permission_callback (__return_true); admin endpoints require manage_options plus a per-item capability check and a wp_rest nonce. No behavioral change.
+* Maintenance: removed the manual load_plugin_textdomain() call (translations are loaded automatically for plugins hosted on WordPress.org since WP 4.6).
 
 = 0.2.7 =
 * Fix: site_map no longer surfaces WooCommerce navigation (shop, product categories/tags); menu filtering matches linked objects, not URL slugs, so it is language-independent.

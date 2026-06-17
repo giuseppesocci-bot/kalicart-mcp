@@ -71,6 +71,7 @@ class KaliCart_MCP_Content {
 		}
 		// WPML (and compatible plugins exposing the wpml_default_language filter)
 		if ( has_filter( 'wpml_default_language' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- third-party hook owned by WPML; must be called by its documented name to integrate.
 			$lang = apply_filters( 'wpml_default_language', null );
 			return $lang ? (string) $lang : null;
 		}
@@ -92,6 +93,7 @@ class KaliCart_MCP_Content {
 		if ( function_exists( 'pll_default_language' ) ) {
 			$q_args['lang'] = $lang;            // Polylang query var
 		} elseif ( has_action( 'wpml_switch_language' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- third-party hook owned by WPML; must be called by its documented name to integrate.
 			do_action( 'wpml_switch_language', $lang ); // WPML global context
 		}
 		return $q_args;

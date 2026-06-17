@@ -52,6 +52,51 @@ class KaliCart_MCP_Content {
 		return array_values( array_unique( array_filter( array_map( 'absint', $ids ) ) ) );
 	}
 
+	/**
+	 * The site's primary content language, or null on monolingual sites.
+	 *
+	 * When a multilingual plugin (Polylang) is active, the MCP serves content in
+	 * the site's DEFAULT language only. Rationale: agents translate on demand far
+	 * better than per-site translation pipelines, and exposing every language would
+	 * return the same content duplicated once per language with no way for the agent
+	 * to know they are the same resource. Serving one declared language keeps the
+	 * JSON regular and coherent. On sites without a multilingual plugin this returns
+	 * null and nothing changes.
+	 */
+	public static function default_language() {
+		// Polylang
+		if ( function_exists( 'pll_default_language' ) ) {
+			$lang = pll_default_language();
+			return $lang ? (string) $lang : null;
+		}
+		// WPML (and compatible plugins exposing the wpml_default_language filter)
+		if ( has_filter( 'wpml_default_language' ) ) {
+			$lang = apply_filters( 'wpml_default_language', null );
+			return $lang ? (string) $lang : null;
+		}
+		return null;
+	}
+
+	/**
+	 * Restrict a WP_Query args array to the primary language, when a multilingual
+	 * plugin is active. Polylang understands the \'lang\' query var directly; WPML
+	 * switches the global language context via the \'wpml_switch_language\' action
+	 * before the query runs. Monolingual sites: no-op. Returns the (possibly
+	 * modified) args; WPML side-effects are applied as a side effect.
+	 */
+	public static function apply_primary_language( array $q_args ) {
+		$lang = self::default_language();
+		if ( null === $lang ) {
+			return $q_args;
+		}
+		if ( function_exists( 'pll_default_language' ) ) {
+			$q_args['lang'] = $lang;            // Polylang query var
+		} elseif ( has_action( 'wpml_switch_language' ) ) {
+			do_action( 'wpml_switch_language', $lang ); // WPML global context
+		}
+		return $q_args;
+	}
+
 	/** IDs of WooCommerce functional pages — excluded as application UI, not editorial content. */
 	public static function woo_reserved_page_ids(): array {
 		if ( ! class_exists( 'WooCommerce' ) ) {
@@ -97,16 +142,23 @@ class KaliCart_MCP_Content {
 				$tax_slugs[ $tx ] = true;
 			}
 		}
+		$primary_lang = self::default_language();
 		$taxes = array();
 		foreach ( array_keys( $tax_slugs ) as $slug ) {
 			$obj = get_taxonomy( $slug );
 			if ( ! $obj || empty( $obj->public ) ) {
 				continue;
 			}
+			// Count terms in the primary language only, so multilingual sites do not
+			// report the same category once per language.
+			$count_args = array( 'taxonomy' => $slug, 'hide_empty' => false );
+			if ( null !== $primary_lang && function_exists( 'pll_default_language' ) ) {
+				$count_args['lang'] = $primary_lang;
+			}
 			$taxes[] = array(
 				'slug'  => $slug,
 				'label' => $obj->labels->name ?? $slug,
-				'terms' => (int) wp_count_terms( array( 'taxonomy' => $slug, 'hide_empty' => false ) ),
+				'terms' => (int) wp_count_terms( $count_args ),
 			);
 		}
 
@@ -119,6 +171,8 @@ class KaliCart_MCP_Content {
 			'posts_page'  => $blog_id ? self::ref( $blog_id ) : null,
 			'post_types'  => $types,
 			'taxonomies'  => $taxes,
+			'served_language' => $primary_lang,
+			'multilingual'    => ( null !== $primary_lang ),
 			'generator'   => 'KaliCart MCP ' . KALICART_MCP_VERSION,
 		);
 	}
@@ -222,6 +276,9 @@ class KaliCart_MCP_Content {
 			'orderby'        => $orderby,
 			'order'          => ( strtoupper( (string) ( $args['order'] ?? 'DESC' ) ) === 'ASC' ) ? 'ASC' : 'DESC',
 		);
+		// Multilingual: serve the site's primary language only (Polylang or WPML).
+		$primary_lang = self::default_language();
+		$q_args = self::apply_primary_language( $q_args );
 		if ( ! empty( $args['category'] ) ) {
 			$q_args['category_name'] = sanitize_title( (string) $args['category'] );
 		}
@@ -260,7 +317,7 @@ class KaliCart_MCP_Content {
 			$items[] = self::summary( $post );
 		}
 
-		return array(
+		$out = array(
 			'post_type'   => $type,
 			'page'        => $page,
 			'per_page'    => $per_page,
@@ -268,6 +325,11 @@ class KaliCart_MCP_Content {
 			'total_pages' => (int) $query->max_num_pages,
 			'items'       => $items,
 		);
+		// Declare the served language so the agent never has to guess (multilingual sites).
+		if ( null !== $primary_lang ) {
+			$out['language'] = $primary_lang;
+		}
+		return $out;
 	}
 
 	public static function search_content( array $args ): array {
@@ -284,6 +346,7 @@ class KaliCart_MCP_Content {
 			: array_keys( self::public_post_types() );
 
 		$s_not_in = self::woo_reserved_page_ids();
+		$primary_lang = self::default_language();
 		$s_args   = array(
 			's'              => $term,
 			'post_type'      => $types,
@@ -310,14 +373,15 @@ class KaliCart_MCP_Content {
 				),
 			);
 		}
-		$query = new WP_Query( $s_args );
+		$s_args = self::apply_primary_language( $s_args );
+		$query  = new WP_Query( $s_args );
 
 		$items = array();
 		foreach ( $query->posts as $post ) {
 			$items[] = self::summary( $post );
 		}
 
-		return array(
+		$out = array(
 			'query'       => $term,
 			'page'        => $page,
 			'per_page'    => $per_page,
@@ -325,6 +389,10 @@ class KaliCart_MCP_Content {
 			'total_pages' => (int) $query->max_num_pages,
 			'items'       => $items,
 		);
+		if ( null !== $primary_lang ) {
+			$out['language'] = $primary_lang;
+		}
+		return $out;
 	}
 
 	public static function get_content( array $args ): array {

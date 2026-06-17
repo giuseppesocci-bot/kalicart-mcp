@@ -264,7 +264,14 @@ class KaliCart_MCP_Admin {
 
 			<?php
 			$excl_terms = KaliCart_MCP_Content::excluded_term_ids();
-			$categories = get_categories( array( 'hide_empty' => false ) );
+			// Show only the primary-language categories: the MCP serves one language,
+			// so listing every translation (e.g. Academy IT/EN/DE/FR) would be ambiguous.
+			$cat_args = array( 'hide_empty' => false );
+			$primary_lang = KaliCart_MCP_Content::default_language();
+			if ( null !== $primary_lang && function_exists( 'pll_default_language' ) ) {
+				$cat_args['lang'] = $primary_lang;
+			}
+			$categories = get_categories( $cat_args );
 			$exposed_types = array_keys( KaliCart_MCP_Content::public_post_types() );
 
 			// Content (posts, pages, public CPTs): potentially thousands — never preload.
@@ -286,6 +293,19 @@ class KaliCart_MCP_Admin {
 			<div class="kcmcp-card">
 				<h2><?php esc_html_e( 'Content exclusions', 'kalicart-mcp' ); ?></h2>
 				<p class="kcmcp-muted"><?php esc_html_e( 'Hide content from AI agents. Hidden items disappear from listings, search, and direct retrieval. You can also hide any single item from its editor sidebar.', 'kalicart-mcp' ); ?></p>
+				<?php
+				$kcmcp_primary_lang = KaliCart_MCP_Content::default_language();
+				if ( null !== $kcmcp_primary_lang ) : ?>
+					<p class="kcmcp-notice" style="margin-top:10px;padding:10px 14px;background:#f0f6fc;border:1px solid #c5d9ed;border-radius:6px;font-size:13px;color:#1d3a5f;">
+						<?php
+						echo wp_kses_post( sprintf(
+							/* translators: %s: primary language code, e.g. "IT" */
+							__( 'This site is multilingual. To keep the data agents receive clean and free of duplicates, KaliCart MCP serves content in your primary language only (%s). The categories below are shown in that language.', 'kalicart-mcp' ),
+							'<strong>' . esc_html( strtoupper( $kcmcp_primary_lang ) ) . '</strong>'
+						) );
+						?>
+					</p>
+				<?php endif; ?>
 
 				<?php
 				// --- Categories (batch form) ---

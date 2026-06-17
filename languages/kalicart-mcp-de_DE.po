@@ -195,3 +195,8 @@ msgstr "Dieser Inhalt ist derzeit vor allen KI-Agenten verborgen."
 #: includes/class-meta-box.php:71
 msgid "This content is visible to AI agents via KaliCart MCP."
 msgstr "Dieser Inhalt ist für KI-Agenten über KaliCart MCP sichtbar."
+
+#: includes/class-admin.php:298
+#, php-format
+msgid "This site is multilingual. To keep the data agents receive clean and free of duplicates, KaliCart MCP serves content in your primary language only (%s). The categories below are shown in that language."
+msgstr "Diese Website ist mehrsprachig. Damit die von Agenten empfangenen Daten sauber und duplikatfrei bleiben, stellt KaliCart MCP Inhalte nur in Ihrer Hauptsprache (%s) bereit. Die folgenden Kategorien werden in dieser Sprache angezeigt."

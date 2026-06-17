@@ -4,7 +4,7 @@ Tags: mcp, ai, agents, markdown, content
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.2.8
+Stable tag: 0.2.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,10 @@ Yes. Each post and page has a "Hide from AI agents" checkbox in the editor sideb
 No. WooCommerce is optional. If it is installed, the relevant functional pages are detected and excluded automatically.
 
 == Changelog ==
+
+= 0.2.9 =
+* Multilingual support: on sites running a multilingual plugin (Polylang or WPML), KaliCart MCP now serves content in the site's primary language only. This removes duplicate posts, pages and categories from listings, search and the site map, so agents receive one clean, coherent set of content instead of the same item repeated once per language. The served language is declared in the JSON (language / served_language) so agents never have to guess; agents translate on demand for the end user.
+* Admin: the category exclusion list now shows only primary-language categories (no more ambiguous per-language duplicates), with an explanatory notice on multilingual sites. Monolingual sites are unaffected.
 
 = 0.2.8 =
 * Hardening: reviewed all REST routes for WordPress.org compliance. Read-only public MCP endpoints declare an explicit public permission_callback (__return_true); admin endpoints require manage_options plus a per-item capability check and a wp_rest nonce. No behavioral change.

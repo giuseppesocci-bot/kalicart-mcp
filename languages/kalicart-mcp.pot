@@ -222,3 +222,8 @@ msgstr ""
 #: includes/class-meta-box.php:71
 msgid "This content is visible to AI agents via KaliCart MCP."
 msgstr ""
+
+#: includes/class-admin.php:298
+#, php-format
+msgid "This site is multilingual. To keep the data agents receive clean and free of duplicates, KaliCart MCP serves content in your primary language only (%s). The categories below are shown in that language."
+msgstr ""

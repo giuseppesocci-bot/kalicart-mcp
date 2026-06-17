@@ -451,6 +451,10 @@ class KaliCart_MCP_Content {
 			'url'     => get_permalink( $post ),
 			'date'    => get_post_time( 'c', true, $post ),
 			'excerpt' => self::excerpt( $post ),
+			// Taxonomy terms (categories, tags) so list/search items are self-contained:
+			// an agent sees each item's category without a follow-up get_content call.
+			// Empty for content types without public taxonomies (e.g. pages).
+			'terms'   => self::terms( $post ),
 		);
 	}
 

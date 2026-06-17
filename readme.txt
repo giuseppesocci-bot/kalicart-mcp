@@ -74,6 +74,7 @@ No. WooCommerce is optional. If it is installed, the relevant functional pages a
 = 0.2.9 =
 * Multilingual support: on sites running a multilingual plugin (Polylang or WPML), KaliCart MCP now serves content in the site's primary language only. This removes duplicate posts, pages and categories from listings, search and the site map, so agents receive one clean, coherent set of content instead of the same item repeated once per language. The served language is declared in the JSON (language / served_language) so agents never have to guess; agents translate on demand for the end user.
 * Admin: the category exclusion list now shows only primary-language categories (no more ambiguous per-language duplicates), with an explanatory notice on multilingual sites. Monolingual sites are unaffected.
+* Content: list and search results now include each item's taxonomy terms (categories, tags), so the JSON is self-contained — an agent sees an article's category without a follow-up request.
 
 = 0.2.8 =
 * Hardening: reviewed all REST routes for WordPress.org compliance. Read-only public MCP endpoints declare an explicit public permission_callback (__return_true); admin endpoints require manage_options plus a per-item capability check and a wp_rest nonce. No behavioral change.

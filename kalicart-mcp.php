@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       KaliCart MCP – Make Your Content Readable by AI Agents
+ * Plugin Name:       KaliCart MCP
  * Plugin URI:        https://mcp.kalicart.com
  * Description:       Agent-callable WordPress content and tools.
  * Version:           0.2.9

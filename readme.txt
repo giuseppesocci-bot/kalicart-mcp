@@ -1,4 +1,4 @@
-=== KaliCart MCP – Make Your Content Readable by AI Agents ===
+=== KaliCart MCP ===
 Contributors: carthub
 Tags: mcp, ai, chatgpt, markdown, agent
 Requires at least: 6.0

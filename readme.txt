@@ -1,6 +1,6 @@
-=== KaliCart MCP ===
+=== KaliCart MCP – Make Your Content Readable by AI Agents ===
 Contributors: carthub
-Tags: mcp, ai, agents, markdown, content
+Tags: mcp, ai, chatgpt, markdown, agent
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
@@ -8,11 +8,11 @@ Stable tag: 0.2.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Make your WordPress site readable and callable by AI agents. Exposes your editorial content as an MCP server, plus clean Markdown and discovery.
+Make your WordPress content AI-ready: an MCP server that lets ChatGPT, Claude and any agent read your posts and pages as clean Markdown.
 
 == Description ==
 
-KaliCart MCP turns a WordPress site into something AI agents can browse and query directly. It exposes your editorial content (posts, pages, and public custom post types) as a standards-based **Model Context Protocol (MCP) server** over JSON-RPC 2.0, alongside clean Markdown output and a lightweight presence/discovery layer.
+KaliCart MCP makes your WordPress site agent-ready: it turns your editorial content into something AI agents and assistants — such as ChatGPT, Claude, Gemini, Perplexity and any MCP-capable client — can browse, search and read directly. It exposes your posts, pages and public custom post types as a standards-based **Model Context Protocol (MCP) server** over JSON-RPC 2.0, alongside clean Markdown output and a lightweight presence/discovery layer. No LLM, no cloud, no external calls — everything runs on your own server.
 
 It is **read-only** and self-contained: no external calls, no LLM, no cloud dependency. Everything runs on your own server. An agent connects to a single endpoint on your site and can list, search, and read your content as structured data.
 

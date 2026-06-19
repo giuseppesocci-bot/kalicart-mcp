@@ -2,12 +2,12 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * KaliCart_MCP_Markdown
+ * Kcmcp_Markdown
  *
  * Converts rendered post HTML into clean, LLM-friendly Markdown.
  * Self-contained: DOMDocument only, no external libraries, no network.
  */
-class KaliCart_MCP_Markdown {
+class Kcmcp_Markdown {
 
 	public static function from_html( string $html ): string {
 		$html = trim( $html );

@@ -2,7 +2,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * KaliCart_MCP_Meta_Box
+ * Kcmcp_Meta_Box
  *
  * Adds a "KaliCart MCP" sidebar box to every eligible content type (post, page,
  * and any public navigable CPT that is not commerce). A single checkbox lets the
@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  * Works in the Classic Editor, the Block Editor (via register_post_meta /
  * show_in_rest), and Elementor (which uses the Classic editor sidebar).
  */
-class KaliCart_MCP_Meta_Box {
+class Kcmcp_Meta_Box {
 
 	const META_KEY = '_kcmcp_exclude';
 
@@ -24,7 +24,7 @@ class KaliCart_MCP_Meta_Box {
 
 	/** Register the meta key so the Block Editor can read/write it via REST. */
 	public static function register_meta(): void {
-		foreach ( array_keys( KaliCart_MCP_Content::eligible_post_types() ) as $pt ) {
+		foreach ( array_keys( Kcmcp_Content::eligible_post_types() ) as $pt ) {
 			register_post_meta(
 				$pt,
 				self::META_KEY,
@@ -42,7 +42,7 @@ class KaliCart_MCP_Meta_Box {
 
 	/** Add the sidebar meta box to every eligible post type. */
 	public static function add_boxes(): void {
-		foreach ( array_keys( KaliCart_MCP_Content::eligible_post_types() ) as $pt ) {
+		foreach ( array_keys( Kcmcp_Content::eligible_post_types() ) as $pt ) {
 			add_meta_box(
 				'kcmcp-visibility',
 				'KaliCart MCP',

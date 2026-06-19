@@ -2,7 +2,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * KaliCart_MCP_Bridge_Hint
+ * Kcmcp_Bridge_Hint
  *
  * The "road to the Bridge". KaliCart MCP serves WordPress *content* (pages, posts).
  * On a WooCommerce site the computable *catalog* (prices, variants, stock, semantic
@@ -15,10 +15,10 @@ defined( 'ABSPATH' ) || exit;
  * uses); the Bridge is detected by its plugin slug in the active-plugins list —
  * never by referencing a Bridge symbol.
  */
-class KaliCart_MCP_Bridge_Hint {
+class Kcmcp_Bridge_Hint {
 
 	const BRIDGE_URL = 'https://bridge.kalicart.com';
-	const META       = 'kalicart_mcp_bridge_hint_dismissed';
+	const META       = 'kcmcp_bridge_hint_dismissed';
 
 	public static function init(): void {
 		add_action( 'admin_notices', array( __CLASS__, 'maybe_notice' ) );
@@ -60,8 +60,8 @@ class KaliCart_MCP_Bridge_Hint {
 		}
 
 		$dismiss = wp_nonce_url(
-			add_query_arg( 'kalicart_mcp_dismiss_bridge_hint', '1' ),
-			'kalicart_mcp_dismiss_bridge_hint'
+			add_query_arg( 'kcmcp_dismiss_bridge_hint', '1' ),
+			'kcmcp_dismiss_bridge_hint'
 		);
 
 		echo '<div class="notice notice-info">';
@@ -87,15 +87,15 @@ class KaliCart_MCP_Bridge_Hint {
 
 	/** Persist dismissal per user. */
 	public static function maybe_dismiss(): void {
-		if ( empty( $_GET['kalicart_mcp_dismiss_bridge_hint'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( empty( $_GET['kcmcp_dismiss_bridge_hint'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 		if ( ! current_user_can( 'activate_plugins' ) ) {
 			return;
 		}
-		check_admin_referer( 'kalicart_mcp_dismiss_bridge_hint' );
+		check_admin_referer( 'kcmcp_dismiss_bridge_hint' );
 		update_user_meta( get_current_user_id(), self::META, 1 );
-		wp_safe_redirect( remove_query_arg( array( 'kalicart_mcp_dismiss_bridge_hint', '_wpnonce' ) ) );
+		wp_safe_redirect( remove_query_arg( array( 'kcmcp_dismiss_bridge_hint', '_wpnonce' ) ) );
 		exit;
 	}
 

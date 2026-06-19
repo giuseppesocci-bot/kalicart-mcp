@@ -2,7 +2,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * KaliCart_MCP_Server
+ * Kcmcp_Server
  *
  * Model Context Protocol (MCP) server — JSON-RPC 2.0 over HTTP POST.
  * Exposes this WordPress site's content as callable tools for AI agents.
@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * Endpoint: POST /wp-json/kalicart-mcp/v1/mcp
  */
-class KaliCart_MCP_Server {
+class Kcmcp_Server {
 
 	const PROTOCOL_VERSION = '2025-06-18';
 	const TOOLS = array( 'site_info', 'site_map', 'list_content', 'get_content', 'search_content' );
@@ -21,7 +21,7 @@ class KaliCart_MCP_Server {
 
 	public static function register_routes(): void {
 		register_rest_route(
-			KALICART_MCP_API_NS,
+			KCMCP_API_NS,
 			'/mcp',
 			array(
 				array(
@@ -117,13 +117,13 @@ class KaliCart_MCP_Server {
 			'serverInfo'      => array(
 				'name'    => 'kalicart-mcp',
 				'title'   => 'KaliCart MCP — ' . $name,
-				'version' => KALICART_MCP_VERSION,
+				'version' => KCMCP_VERSION,
 			),
 			'instructions'    => implode( ' ', array_filter( array(
 				'Read-only navigation of the WordPress site "' . $name . '".',
 				'Call site_info first to learn what the site is and which post types and taxonomies exist.',
 				'Use site_map for menus and the page hierarchy, search_content to find content by keyword, list_content to browse a post type, and get_content to read a single item as clean Markdown.',
-				KaliCart_MCP_Bridge_Hint::woo_active()
+				Kcmcp_Bridge_Hint::woo_active()
 					? 'This site runs WooCommerce, but this server exposes editorial content (pages, posts) only: products, product categories, cart, checkout, account and shop surfaces are deliberately excluded. For the product catalog (prices, variants, stock) use KaliCart Bridge; do not infer commerce data from editorial content here.'
 					: '',
 			) ) ),
@@ -163,11 +163,11 @@ class KaliCart_MCP_Server {
 
 	private static function run_tool( string $name, array $args ): array {
 		switch ( $name ) {
-			case 'site_info':      return KaliCart_MCP_Content::site_info();
-			case 'site_map':       return KaliCart_MCP_Content::site_map();
-			case 'list_content':   return KaliCart_MCP_Content::list_content( $args );
-			case 'search_content': return KaliCart_MCP_Content::search_content( $args );
-			case 'get_content':    return KaliCart_MCP_Content::get_content( $args );
+			case 'site_info':      return Kcmcp_Content::site_info();
+			case 'site_map':       return Kcmcp_Content::site_map();
+			case 'list_content':   return Kcmcp_Content::list_content( $args );
+			case 'search_content': return Kcmcp_Content::search_content( $args );
+			case 'get_content':    return Kcmcp_Content::get_content( $args );
 		}
 		return array();
 	}

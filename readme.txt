@@ -4,7 +4,7 @@ Tags: mcp, ai, chatgpt, markdown, agent
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.2.9
+Stable tag: 0.2.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,10 @@ Yes. Each post and page has a "Hide from AI agents" checkbox in the editor sideb
 No. WooCommerce is optional. If it is installed, the relevant functional pages are detected and excluded automatically.
 
 == Changelog ==
+
+= 0.2.10 =
+* Compliance: admin page styles and scripts are now enqueued via wp_enqueue_style / wp_enqueue_script on admin_enqueue_scripts (scoped to the plugin's own screen) instead of being printed inline. Dynamic values reach the script through wp_localize_script.
+* Compliance: unified every plugin-owned identifier (options, post meta, query var, nonces, classes, constants) under a single kcmcp_ prefix. No new behavior; no database migration.
 
 = 0.2.9 =
 * Multilingual support: on sites running a multilingual plugin (Polylang or WPML), KaliCart MCP now serves content in the site's primary language only. This removes duplicate posts, pages and categories from listings, search and the site map, so agents receive one clean, coherent set of content instead of the same item repeated once per language. The served language is declared in the JSON (language / served_language) so agents never have to guess; agents translate on demand for the end user.

@@ -2,7 +2,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * KaliCart_MCP_Presence
+ * Kcmcp_Presence
  *
  * Presence / discovery layer. Advertises that this WordPress site is callable
  * as an MCP server, so an agent can find the endpoint without manual config:
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * Note: this plugin deliberately does NOT publish /.well-known/api-catalog, to avoid
  * colliding with KaliCart Bridge (which owns that shared path) on sites running both.
  */
-class KaliCart_MCP_Presence {
+class Kcmcp_Presence {
 
 	public static function init(): void {
 		add_action( 'wp_head', array( __CLASS__, 'inject_head_link' ) );
@@ -57,7 +57,7 @@ class KaliCart_MCP_Presence {
 		if (
 			$response instanceof WP_REST_Response
 			&& $request instanceof WP_REST_Request
-			&& strpos( (string) $request->get_route(), '/' . KALICART_MCP_API_NS ) === 0
+			&& strpos( (string) $request->get_route(), '/' . KCMCP_API_NS ) === 0
 		) {
 			$response->header( 'Content-Signal', self::content_signal_value() );
 		}
@@ -79,19 +79,19 @@ class KaliCart_MCP_Presence {
 	// ── .well-known (rewrite-served, correct Content-Type) ───────────────────────
 
 	public static function register_well_known_rewrite(): void {
-		add_rewrite_rule( '^\.well-known/kalicart-mcp(?:\.json)?$', 'index.php?kalicart_mcp_wk=1', 'top' );
+		add_rewrite_rule( '^\.well-known/kalicart-mcp(?:\.json)?$', 'index.php?kcmcp_wk=1', 'top' );
 	}
 
 	public static function add_well_known_query_var( array $vars ): array {
-		$vars[] = 'kalicart_mcp_wk';
+		$vars[] = 'kcmcp_wk';
 		return $vars;
 	}
 
 	public static function serve_well_known( $wp = null ): void {
 		$hit = false;
-		if ( $wp instanceof WP && ! empty( $wp->query_vars['kalicart_mcp_wk'] ) ) {
+		if ( $wp instanceof WP && ! empty( $wp->query_vars['kcmcp_wk'] ) ) {
 			$hit = true;
-		} elseif ( ! empty( $_GET['kalicart_mcp_wk'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		} elseif ( ! empty( $_GET['kcmcp_wk'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$hit = true;
 		}
 		if ( ! $hit ) {
@@ -107,10 +107,10 @@ class KaliCart_MCP_Presence {
 	// ── discovery payload ────────────────────────────────────────────────────────
 
 	private static function discovery_payload(): string {
-		$base = rest_url( KALICART_MCP_API_NS );
+		$base = rest_url( KCMCP_API_NS );
 		$doc = array(
 			'type'          => 'kalicart-mcp-v1',
-			'version'       => KALICART_MCP_VERSION,
+			'version'       => KCMCP_VERSION,
 			'name'          => get_bloginfo( 'name' ),
 			'description'   => get_bloginfo( 'description' ),
 			'url'           => home_url( '/' ),
@@ -120,18 +120,18 @@ class KaliCart_MCP_Presence {
 				'endpoint'        => $base . '/mcp',
 				'transport'       => 'http',
 				'protocol'        => 'Model Context Protocol',
-				'protocolVersion' => KaliCart_MCP_Server::PROTOCOL_VERSION,
+				'protocolVersion' => Kcmcp_Server::PROTOCOL_VERSION,
 				'jsonrpc'         => '2.0',
-				'tools'           => array_values( KaliCart_MCP_Server::TOOLS ),
+				'tools'           => array_values( Kcmcp_Server::TOOLS ),
 			),
 			'agent_note'    => 'This WordPress site is callable as an MCP server. Connect an MCP client to mcp.endpoint (JSON-RPC 2.0 over HTTP POST) and call site_info first.',
-			'generator'     => 'KaliCart MCP ' . KALICART_MCP_VERSION,
+			'generator'     => 'KaliCart MCP ' . KCMCP_VERSION,
 			'documentation' => 'https://mcp.kalicart.com/docs/',
 		);
 
 		// Agent-facing pointer to the Bridge on WooCommerce sites (detection only,
 		// no dependency): MCP serves content; the computable catalog is the Bridge's.
-		$commerce = KaliCart_MCP_Bridge_Hint::commerce_hint();
+		$commerce = Kcmcp_Bridge_Hint::commerce_hint();
 		if ( null !== $commerce ) {
 			$doc['commerce'] = $commerce;
 		}

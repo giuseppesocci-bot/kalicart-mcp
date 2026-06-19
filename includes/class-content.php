@@ -2,13 +2,13 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * KaliCart_MCP_Content
+ * Kcmcp_Content
  *
  * Read-only navigation + retrieval over WordPress core content
  * (posts, pages, public custom post types, taxonomies, menus).
  * No external calls. Returns plain arrays consumed by the MCP server.
  */
-class KaliCart_MCP_Content {
+class Kcmcp_Content {
 
 	/** Candidate content types: public + navigable, minus media and commerce. */
 	public static function eligible_post_types(): array {
@@ -175,7 +175,7 @@ class KaliCart_MCP_Content {
 			'taxonomies'  => $taxes,
 			'served_language' => $primary_lang,
 			'multilingual'    => ( null !== $primary_lang ),
-			'generator'   => 'KaliCart MCP ' . KALICART_MCP_VERSION,
+			'generator'   => 'KaliCart MCP ' . KCMCP_VERSION,
 		);
 	}
 
@@ -438,7 +438,7 @@ class KaliCart_MCP_Content {
 			'modified'   => get_post_modified_time( 'c', true, $post ),
 			'excerpt'    => self::excerpt( $post ),
 			'terms'      => self::terms( $post ),
-			'markdown'   => KaliCart_MCP_Markdown::from_html( (string) $html ),
+			'markdown'   => Kcmcp_Markdown::from_html( (string) $html ),
 			'word_count' => str_word_count( wp_strip_all_tags( (string) $html ) ),
 		);
 	}

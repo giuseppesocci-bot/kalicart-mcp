@@ -261,11 +261,9 @@ class Kcmcp_Admin {
 			$excl_terms = Kcmcp_Content::excluded_term_ids();
 			// Show only the primary-language categories: the MCP serves one language,
 			// so listing every translation (e.g. Academy IT/EN/DE/FR) would be ambiguous.
-			$cat_args = array( 'hide_empty' => false );
-			$primary_lang = Kcmcp_Content::default_language();
-			if ( null !== $primary_lang && function_exists( 'pll_default_language' ) ) {
-				$cat_args['lang'] = $primary_lang;
-			}
+			// Restrict to the primary language on multilingual sites (Polylang via the
+			// 'lang' arg, WPML via global context). No-op when monolingual.
+			$cat_args   = Kcmcp_Content::apply_primary_language( array( 'hide_empty' => false ) );
 			$categories = get_categories( $cat_args );
 			$exposed_types = array_keys( Kcmcp_Content::public_post_types() );
 

@@ -152,11 +152,9 @@ class Kcmcp_Content {
 				continue;
 			}
 			// Count terms in the primary language only, so multilingual sites do not
-			// report the same category once per language.
-			$count_args = array( 'taxonomy' => $slug, 'hide_empty' => false );
-			if ( null !== $primary_lang && function_exists( 'pll_default_language' ) ) {
-				$count_args['lang'] = $primary_lang;
-			}
+			// report the same category once per language (Polylang via 'lang',
+			// WPML via global context). No-op when monolingual.
+			$count_args = self::apply_primary_language( array( 'taxonomy' => $slug, 'hide_empty' => false ) );
 			$taxes[] = array(
 				'slug'  => $slug,
 				'label' => $obj->labels->name ?? $slug,

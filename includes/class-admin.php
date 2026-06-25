@@ -179,6 +179,8 @@ class Kcmcp_Admin {
 			$chosen   = isset( $_POST['kcmcp_types'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['kcmcp_types'] ) ) : array();
 			$chosen   = array_values( array_intersect( $eligible, $chosen ) );
 			update_option( 'kcmcp_exposed_types', $chosen );
+			// Expose author toggle (same form, same nonce).
+			update_option( 'kcmcp_expose_author', isset( $_POST['kcmcp_expose_author'] ) ? '1' : '0' );
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Exposure settings saved.', 'kalicart-mcp' ) . '</p></div>';
 		}
 
@@ -253,7 +255,17 @@ class Kcmcp_Admin {
 							</span>
 						</div>
 					<?php endforeach; ?>
-					<div style="margin-top:12px;"><button type="submit" name="kcmcp_save_exposure" value="1" class="kcmcp-copy" style="padding:7px 18px;"><?php esc_html_e( 'Save', 'kalicart-mcp' ); ?></button></div>
+					<div class="kcmcp-toggle" style="margin-top:16px;border-top:1px solid var(--kcmcp-border,#e5e7eb);padding-top:14px;">
+					<label class="kcmcp-switch">
+						<input type="checkbox" name="kcmcp_expose_author" value="1" <?php checked( '1', get_option( 'kcmcp_expose_author', '0' ) ); ?> />
+						<span class="kcmcp-tog-track"><span class="kcmcp-tog-thumb"></span></span>
+					</label>
+					<span class="kcmcp-tog-label">
+						<strong><?php esc_html_e( 'Expose author name', 'kalicart-mcp' ); ?></strong>
+						<div class="kcmcp-tog-note"><?php esc_html_e( 'When enabled, the display name of the post author is included in list and content results. Disabled by default.', 'kalicart-mcp' ); ?></div>
+					</span>
+				</div>
+				<div style="margin-top:12px;"><button type="submit" name="kcmcp_save_exposure" value="1" class="kcmcp-copy" style="padding:7px 18px;"><?php esc_html_e( 'Save', 'kalicart-mcp' ); ?></button></div>
 				</form>
 			</div>
 

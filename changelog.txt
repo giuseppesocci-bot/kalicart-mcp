@@ -1,5 +1,14 @@
 *** KaliCart MCP Changelog ***
 
+2026-06-25 - version 0.2.11
+
+* Content: site_info now lists the actual terms (name and slug) of each taxonomy, not just the count, so an agent can filter list_content by category or tag without guessing slugs. Capped at 100 terms per taxonomy.
+* Content: list_content and search_content accept optional after / before publish-date bounds (ISO 8601 or YYYY-MM-DD), so agents can scope results to a time window.
+* Content: list and search results now include each item's word_count, a length signal that lets an agent choose which item to open without fetching each one. The same count is reported in get_content, computed from source content so it matches everywhere.
+* Admin: optional "Expose author name" toggle (off by default). When enabled, the post author's display name is included in list and content results.
+* Docs: tool descriptions now reflect every field each tool returns (taxonomy term values, date filtering, word count, author), so agents know what to expect before calling.
+
+
 2026-06-19 - version 0.2.10
 
 * Compliance: admin page styles and scripts are now enqueued via wp_enqueue_style / wp_enqueue_script on admin_enqueue_scripts (scoped to the plugin's own screen) instead of being printed inline. Dynamic values reach the script through wp_localize_script.

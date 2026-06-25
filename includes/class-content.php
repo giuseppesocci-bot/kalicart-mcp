@@ -38,6 +38,11 @@ class Kcmcp_Content {
 		return $types;
 	}
 
+	/** Whether the site owner has enabled author name exposure to agents (default: off). */
+	public static function expose_author(): bool {
+		return '1' === get_option( 'kcmcp_expose_author', '0' );
+	}
+
 	/** Types MCP never treats as content: media + commerce (the Bridge owns products). */
 	private static function excluded_types(): array {
 		return array( 'attachment', 'product', 'product_variation' );
@@ -155,11 +160,33 @@ class Kcmcp_Content {
 			// report the same category once per language (Polylang via 'lang',
 			// WPML via global context). No-op when monolingual.
 			$count_args = self::apply_primary_language( array( 'taxonomy' => $slug, 'hide_empty' => false ) );
-			$taxes[] = array(
+			$total_terms = (int) wp_count_terms( $count_args );
+			$tax_entry = array(
 				'slug'  => $slug,
 				'label' => $obj->labels->name ?? $slug,
-				'terms' => (int) wp_count_terms( $count_args ),
+				'terms' => $total_terms,
 			);
+			// List the actual terms (name + slug) so an agent can filter list_content by
+			// category/tag without guessing slugs. Capped: beyond 100 the list stops
+			// helping and only bloats the response (the count above still tells the scale).
+			if ( $total_terms > 0 && $total_terms <= 100 ) {
+				$term_args = self::apply_primary_language( array(
+					'taxonomy'   => $slug,
+					'hide_empty' => false,
+					'number'     => 100,
+					'orderby'    => 'count',
+					'order'      => 'DESC',
+				) );
+				$term_objs = get_terms( $term_args );
+				if ( is_array( $term_objs ) && ! is_wp_error( $term_objs ) ) {
+					$list = array();
+					foreach ( $term_objs as $t ) {
+						$list[] = array( 'name' => $t->name, 'slug' => $t->slug, 'count' => (int) $t->count );
+					}
+					$tax_entry['values'] = $list;
+				}
+			}
+			$taxes[] = $tax_entry;
 		}
 
 		return array(
@@ -286,6 +313,12 @@ class Kcmcp_Content {
 			$q_args['tag'] = sanitize_title( (string) $args['tag'] );
 		}
 
+		// Optional publish-date range (after/before).
+		$dq = self::date_query_from( $args );
+		if ( null !== $dq ) {
+			$q_args['date_query'] = $dq;
+		}
+
 		// Exclude WooCommerce functional pages (cart, checkout, my account, shop, etc.).
 		$not_in = self::woo_reserved_page_ids();
 		if ( ! empty( $not_in ) ) {
@@ -373,6 +406,13 @@ class Kcmcp_Content {
 				),
 			);
 		}
+
+		// Optional publish-date range (after/before).
+		$dq = self::date_query_from( $args );
+		if ( null !== $dq ) {
+			$s_args['date_query'] = $dq;
+		}
+
 		$s_args = self::apply_primary_language( $s_args );
 		$query  = new WP_Query( $s_args );
 
@@ -427,7 +467,7 @@ class Kcmcp_Content {
 		$html = apply_filters( 'the_content', $post->post_content ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- applying WordPress core filter, not registering a custom hook.
 		wp_reset_postdata();
 
-		return array(
+		$result = array(
 			'id'         => (int) $post->ID,
 			'type'       => $post->post_type,
 			'title'      => get_the_title( $post ),
@@ -437,12 +477,19 @@ class Kcmcp_Content {
 			'excerpt'    => self::excerpt( $post ),
 			'terms'      => self::terms( $post ),
 			'markdown'   => Kcmcp_Markdown::from_html( (string) $html ),
-			'word_count' => str_word_count( wp_strip_all_tags( (string) $html ) ),
+			// Word count from raw source content, matching list/search summaries so the
+			// same item reports the same length everywhere (rendered HTML would diverge
+			// once shortcodes/blocks inject markup).
+			'word_count' => str_word_count( wp_strip_all_tags( (string) $post->post_content ) ),
 		);
+		if ( self::expose_author() ) {
+			$result['author'] = get_the_author_meta( 'display_name', (int) $post->post_author );
+		}
+		return $result;
 	}
 
 	private static function summary( \WP_Post $post ): array {
-		return array(
+		$item = array(
 			'id'      => (int) $post->ID,
 			'type'    => $post->post_type,
 			'title'   => get_the_title( $post ),
@@ -453,7 +500,14 @@ class Kcmcp_Content {
 			// an agent sees each item's category without a follow-up get_content call.
 			// Empty for content types without public taxonomies (e.g. pages).
 			'terms'   => self::terms( $post ),
+			// Length signal so an agent can judge which result to open with get_content
+			// without fetching each one. Computed from raw content (scale, not exact render).
+			'word_count' => str_word_count( wp_strip_all_tags( (string) $post->post_content ) ),
 		);
+		if ( self::expose_author() ) {
+			$item['author'] = get_the_author_meta( 'display_name', (int) $post->post_author );
+		}
+		return $item;
 	}
 
 	private static function ref( int $id ): array {
@@ -494,6 +548,28 @@ class Kcmcp_Content {
 		}
 		$type = sanitize_key( (string) $type );
 		return in_array( $type, $valid, true ) ? $type : $fallback;
+	}
+
+	/**
+	 * Build a WP_Query date_query from optional after/before bounds.
+	 * Accepts ISO 8601 or YYYY-MM-DD; invalid values are ignored. Returns null
+	 * when neither bound is usable (so the caller adds no date_query at all).
+	 */
+	private static function date_query_from( array $args ) {
+		$after  = isset( $args['after'] ) ? trim( (string) $args['after'] ) : '';
+		$before = isset( $args['before'] ) ? trim( (string) $args['before'] ) : '';
+		$range  = array();
+		if ( '' !== $after && false !== strtotime( $after ) ) {
+			$range['after'] = $after;
+		}
+		if ( '' !== $before && false !== strtotime( $before ) ) {
+			$range['before'] = $before;
+		}
+		if ( empty( $range ) ) {
+			return null;
+		}
+		$range['inclusive'] = true;
+		return array( $range );
 	}
 
 	private static function clamp( int $v, int $min, int $max ): int {

@@ -179,7 +179,7 @@ class Kcmcp_Server {
 			array(
 				'name'        => 'site_info',
 				'title'       => 'Site info',
-				'description' => 'What this site is: name, description, language, front page, available post types and taxonomies. Call this first to ground navigation.',
+				'description' => 'What this site is: name, description, language, front page, and the available post types and taxonomies (each taxonomy lists its terms with name and slug, so you can filter list_content without guessing). Call this first to ground navigation.',
 				'inputSchema' => $empty,
 			),
 			array(
@@ -191,7 +191,7 @@ class Kcmcp_Server {
 			array(
 				'name'        => 'search_content',
 				'title'       => 'Search content',
-				'description' => 'Full-text search across the site content. Returns matching items (title, URL, excerpt). Use get_content to read a result in full.',
+				'description' => 'Full-text search across the site content. Returns matching items (title, URL, excerpt, taxonomy terms, word count, and author when enabled). Optionally scope by publish date with after/before. Use get_content to read a result in full.',
 				'inputSchema' => array(
 					'type'       => 'object',
 					'properties' => (object) array(
@@ -199,6 +199,8 @@ class Kcmcp_Server {
 						'post_type' => array( 'type' => 'string', 'description' => 'Optional post type slug to restrict the search (e.g. "post", "page"). Omit to search all public types.' ),
 						'per_page'  => array( 'type' => 'integer', 'minimum' => 1, 'maximum' => 50, 'default' => 20 ),
 						'page'      => array( 'type' => 'integer', 'minimum' => 1, 'default' => 1 ),
+						'after'     => array( 'type' => 'string', 'description' => 'Only items published on or after this date (ISO 8601 or YYYY-MM-DD).' ),
+						'before'    => array( 'type' => 'string', 'description' => 'Only items published on or before this date (ISO 8601 or YYYY-MM-DD).' ),
 					),
 					'required'   => array( 'q' ),
 				),
@@ -206,7 +208,7 @@ class Kcmcp_Server {
 			array(
 				'name'        => 'list_content',
 				'title'       => 'List content',
-				'description' => 'Browse content of one post type (paginated). Optionally filter posts by category or tag slug.',
+				'description' => 'Browse content of one post type (paginated). Optionally filter posts by category or tag slug, or by publish date with after/before. Each item includes title, URL, excerpt, taxonomy terms, word count, and author when enabled.',
 				'inputSchema' => array(
 					'type'       => 'object',
 					'properties' => (object) array(
@@ -217,13 +219,15 @@ class Kcmcp_Server {
 						'page'      => array( 'type' => 'integer', 'minimum' => 1, 'default' => 1 ),
 						'orderby'   => array( 'type' => 'string', 'enum' => array( 'date', 'title', 'menu_order' ), 'default' => 'date' ),
 						'order'     => array( 'type' => 'string', 'enum' => array( 'ASC', 'DESC' ), 'default' => 'DESC' ),
+						'after'     => array( 'type' => 'string', 'description' => 'Only items published on or after this date (ISO 8601 or YYYY-MM-DD).' ),
+						'before'    => array( 'type' => 'string', 'description' => 'Only items published on or before this date (ISO 8601 or YYYY-MM-DD).' ),
 					),
 				),
 			),
 			array(
 				'name'        => 'get_content',
 				'title'       => 'Get content',
-				'description' => 'Read a single item in full as clean Markdown, with title, URL, date, taxonomy terms and word count. Identify it by numeric id (preferred) or by slug + post_type.',
+				'description' => 'Read a single item in full as clean Markdown, with title, URL, publish and modified dates, excerpt, taxonomy terms, word count, and author when enabled. Identify it by numeric id (preferred) or by slug + post_type.',
 				'inputSchema' => array(
 					'type'       => 'object',
 					'properties' => (object) array(
